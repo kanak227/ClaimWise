@@ -37,15 +37,18 @@ export const getRules = async () => {
 
 export const getRuleAttributes = async () => {
   try {
-    const response = await fetch(`${API_BASE}/api/rules/attributes`);
+    const response = await fetch(`${API_BASE}${API_ENDPOINTS.rules.attributes}`);
     if (!response.ok) {
       // Fallback to mock data if endpoint doesn't exist
-      return ["severity_score", "confidence_score", "claim_type", "amount"];
+      return ["fraud_score", "complexity_score", "severity_level", "claim_category"];
     }
-    return response.json() as Promise<string[]>;
+    const data = await response.json();
+    // Backend returns an object with condition_types, operators, etc.
+    // Extract just the attribute names if needed, or return full structure
+    return data.condition_types || ["fraud", "severity", "complexity", "claim_type"];
   } catch {
     // Return mock data if API call fails
-    return ["severity_score", "confidence_score", "claim_type", "amount"];
+    return ["fraud_score", "complexity_score", "severity_level", "claim_category"];
   }
 };
 

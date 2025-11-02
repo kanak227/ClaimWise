@@ -1,0 +1,196 @@
+[
+  {
+    "id": "CLM-1762052009715",
+    "claim_number": "CLM-1762052009715",
+    "claimant": "kv",
+    "policy_no": "CLM-1762052009715",
+    "loss_type": "medical",
+    "claim_type": "medical",
+    "created_at": "2025-11-02T02:53:30.220681Z",
+    "severity": "Low",
+    "severity_level": "Low",
+    "confidence": 0.6639999999999999,
+    "queue": "Health Dept - Mid",
+    "routing_team": "Health Dept - Mid",
+    "final_team": "Health Dept - Mid",
+    "status": "Processing",
+    "email": "kanak.2428csit2245@kiet.edu",
+    "description": "",
+    "rationale": "",
+    "evidence": [],
+    "attachments": {
+      "acord": "/files/CLM-1762052009715_acord.pdf",
+      "loss": "/files/CLM-1762052009715_loss.pdf",
+      "hospital": "/files/CLM-1762052009715_hospital.pdf"
+    },
+    "assignee": "Standard Adjuster",
+    "adjuster": "Standard Adjuster",
+    "ml_scores": {
+      "fraud_score": 0.336,
+      "complexity_score": 3.0,
+      "severity_level": "Low",
+      "fraud_label": 0,
+      "claim_category": "health"
+    },
+    "routing": {
+      "routing_team": "Health Dept - Mid",
+      "adjuster": "Standard Adjuster",
+      "routing_reasons": [
+        "Complexity score is 3.0 and Severity score is Low so routed to this team"
+      ],
+      "routing_reason": "Complexity score is 3.0 and Severity score is Low so routed to this team",
+      "rule_applied": true,
+      "matched_rule_id": null,
+      "rules_version": 1,
+      "pathway_processed": true
+    },
+    "fraud_score": 0.336,
+    "complexity_score": 3.0
+  },
+  {
+    "id": "CLM-1762051670104",
+    "claim_number": "CLM-1762051670104",
+    "claimant": "kanak",
+    "policy_no": "CLM-1762051670104",
+    "loss_type": "accident",
+    "claim_type": "accident",
+    "created_at": "2025-11-02T02:47:50.896651Z",
+    "severity": "Low",
+    "severity_level": "Low",
+    "confidence": 0.808,
+    "queue": "Fast Track",
+    "routing_team": "Fast Track",
+    "final_team": "Fast Track",
+    "status": "Processing",
+    "email": "mayanksrivastava11111@gmail.com",
+    "description": "",
+    "rationale": "",
+    "evidence": [],
+    "attachments": {
+      "acord": "/files/CLM-1762051670104_acord.pdf",
+      "loss": "/files/CLM-1762051670104_loss.pdf",
+      "fir": "/files/CLM-1762051670104_fir.pdf",
+      "rc": "/files/CLM-1762051670104_rc.pdf",
+      "dl": "/files/CLM-1762051670104_dl.pdf"
+    },
+    "assignee": "Standard Adjuster",
+    "adjuster": "Standard Adjuster",
+    "ml_scores": {
+      "fraud_score": 0.192,
+      "complexity_score": 1.0,
+      "severity_level": "Low",
+      "fraud_label": 0,
+      "claim_category": "accident"
+    },
+    "routing": {
+      "routing_team": "Fast Track",
+      "adjuster": "Standard Adjuster",
+      "routing_reasons": [
+        "Low Risk - Default"
+      ],
+      "rule_applied": true,
+      "matched_rule_id": "ccad7ad9-372c-4df8-a0f5-cb5585ac1aff",
+      "routing_reason": "Low Risk - Default",
+      "rules_version": 1,
+      "pathway_processed": true
+    },
+    "fraud_score": 0.192,
+    "complexity_score": 1.0
+  },
+  {
+    "id": "CLM-1762049144121",
+    "claim_number": "CLM-1762049144121",
+    "claimant": "Menu_Punjabi",
+    "policy_no": "CLM-1762049144121",
+    "loss_type": "medical",
+    "claim_type": "medical",
+    "created_at": "2025-11-02T02:05:44.514235Z",
+    "severity": "Low",
+    "severity_level": "Low",
+    "confidence": 0.8009999999999999,
+    "queue": "Fast Track",
+    "routing_team": "Fast Track",
+    "final_team": "Fast Track",
+    "status": "Processing",
+    "email": "mayanksrivastava111@gmail.com",
+    "description": "",
+    "rationale": "",
+    "evidence": [],
+    "attachments": {
+      "acord": "/files/CLM-1762049144121_acord.pdf",
+      "loss": "/files/CLM-1762049144121_loss.pdf",
+      "hospital": "/files/CLM-1762049144121_hospital.pdf"
+    },
+    "assignee": "Standard Adjuster",
+    "adjuster": "Standard Adjuster",
+    "ml_scores": {
+      "fraud_score": 0.199,
+      "complexity_score": 3.0,
+      "severity_level": "Low",
+      "fraud_label": 0,
+      "claim_category": "health"
+    },
+    "routing": {
+      "routing_team": "Fast Track",
+      "adjuster": "Standard Adjuster",
+      "routing_reasons": [
+        "Low Risk - Default"
+      ],
+      "rule_applied": true,
+      "matched_rule_id": "ccad7ad9-372c-4df8-a0f5-cb5585ac1aff",
+      "routing_reason": "Low Risk - Default",
+      "rules_version": 1,
+      "pathway_processed": true
+    },
+    "fraud_score": 0.199,
+    "complexity_score": 3.0
+  },
+  {
+    "id": "CLM-1762049004886",
+    "claim_number": "CLM-1762049004886",
+    "claimant": "Mayank Srivastava",
+    "policy_no": "CLM-1762049004886",
+    "loss_type": "medical",
+    "claim_type": "medical",
+    "created_at": "2025-11-02T02:03:25.546020Z",
+    "severity": "Low",
+    "severity_level": "Low",
+    "confidence": 0.8160000000000001,
+    "queue": "Fast Track",
+    "routing_team": "Fast Track",
+    "final_team": "Fast Track",
+    "status": "Processing",
+    "email": "mayanksrivastava11111@gmail.com",
+    "description": "",
+    "rationale": "",
+    "evidence": [],
+    "attachments": {
+      "acord": "/files/CLM-1762049004886_acord.pdf",
+      "loss": "/files/CLM-1762049004886_loss.pdf",
+      "hospital": "/files/CLM-1762049004886_hospital.pdf"
+    },
+    "assignee": "Standard Adjuster",
+    "adjuster": "Standard Adjuster",
+    "ml_scores": {
+      "fraud_score": 0.184,
+      "complexity_score": 2.0,
+      "severity_level": "Low",
+      "fraud_label": 0,
+      "claim_category": "health"
+    },
+    "routing": {
+      "routing_team": "Fast Track",
+      "adjuster": "Standard Adjuster",
+      "routing_reasons": [
+        "Low Risk - Default"
+      ],
+      "rule_applied": true,
+      "matched_rule_id": "ccad7ad9-372c-4df8-a0f5-cb5585ac1aff",
+      "routing_reason": "Low Risk - Default",
+      "rules_version": 1,
+      "pathway_processed": true
+    },
+    "fraud_score": 0.184,
+    "complexity_score": 2.0
+  }
+]

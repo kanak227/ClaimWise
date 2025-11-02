@@ -7,7 +7,7 @@ export const API_BASE =
 
 export const API_ENDPOINTS = {
   claims: {
-    upload: "/api/claims/upload",
+    upload: "/upload",
     list: "/api/claims",
     get: (id: string) => `/api/claims/${id}`,
     reassign: (id: string) => `/api/claims/${id}/reassign`,
@@ -16,6 +16,12 @@ export const API_ENDPOINTS = {
     list: "/api/queues",
   },
   rules: {
-    list: "/api/rules",
+    list: "/routing/rules",
+    get: (id: string) => `/routing/rules/${id}`,
+    create: "/routing/rules",
+    update: (id: string) => `/routing/rules/${id}`,
+    delete: (id: string) => `/routing/rules/${id}`,
+    attributes: "/routing/attributes",
+    apply: "/routing/apply",
   },
 } as const;

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useMemo, useEffect } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Upload,
@@ -6,28 +6,14 @@ import {
   FileText,
   CheckCircle2,
   Loader2,
-  Image as ImageIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import { uploadClaim } from "@/api/claims";
 import type { AxiosProgressEvent } from "axios";
+import { RoutingModal } from "@/components/shared/RoutingModal";
+import { FileUploadSection } from "@/components/shared/FileUploadSection";
 
-interface FileWithPreview {
-  file: File;
-  preview: string;
-  id: string;
-}
-
-interface FileSection {
-  acord: FileWithPreview[];
-  police: FileWithPreview[];
-  assessment: FileWithPreview[];
-  healthEvidence: FileWithPreview[];
-  bills: FileWithPreview[];
-  prescriptions: FileWithPreview[];
-  vehiclePhotos: FileWithPreview[];
-  repairEstimates: FileWithPreview[];
-}
+// Simplified - just a list of files, no preview needed
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 const ACCEPTED_FILE_TYPES = ".pdf";
@@ -37,48 +23,77 @@ const UploadPage = () => {
   const [form, setForm] = useState({
     name: "",
     email: "",
-    phone: "",
-    policy_no: "",
-    date_of_loss: "",
-    claim_type: "",
-    description: "",
+    claim_type: "", // "medical" or "accident"
   });
 
-  const [files, setFiles] = useState<FileSection>({
+  const [files, setFiles] = useState<{
+    acord: File[];
+    loss: File[];
+    hospital: File[]; // Medical only
+    fir: File[]; // Accident only
+    rc: File[]; // Accident only
+    dl: File[]; // Accident only
+  }>({
     acord: [],
-    police: [],
-    assessment: [],
-    healthEvidence: [],
-    bills: [],
-    prescriptions: [],
-    vehiclePhotos: [],
-    repairEstimates: [],
+    loss: [],
+    hospital: [],
+    fir: [],
+    rc: [],
+    dl: [],
   });
 
   const [uploadProgress, setUploadProgress] = useState(0);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [claimId, setClaimId] = useState<string>("");
+  const [showRoutingModal, setShowRoutingModal] = useState(false);
+  const [routingResult, setRoutingResult] = useState<{
+    claimId: string;
+    fraudScore: number;
+    complexityScore?: number;
+    severityLevel?: string;
+    routingTeam: string;
+    adjuster: string;
+    routingReasons: string[];
+    fullResponse?: any;
+  } | null>(null);
+  const [fraudThreshold] = useState(0.6); // Fraud score threshold
 
-  // Fix cursor disappearing issue - track focused input
-  const focusedInputRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
-  const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
-
-  // Store focus before state update
-  useEffect(() => {
-    if (focusedInputRef.current) {
-      focusedInputRef.current.focus();
-    }
-  }, [form]);
+  // File input refs for each section
+  const fileInputRefs = useRef<{
+    acord: HTMLInputElement | null;
+    loss: HTMLInputElement | null;
+    hospital: HTMLInputElement | null;
+    fir: HTMLInputElement | null;
+    rc: HTMLInputElement | null;
+    dl: HTMLInputElement | null;
+  }>({
+    acord: null,
+    loss: null,
+    hospital: null,
+    fir: null,
+    rc: null,
+    dl: null,
+  });
 
   const handleFormChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
       const { name, value } = e.target;
-      focusedInputRef.current = e.target as HTMLInputElement | HTMLTextAreaElement;
       setForm((prev) => ({
         ...prev,
         [name]: value,
       }));
+      // Reset files when claim type changes
+      if (name === "claim_type") {
+        setFiles({
+          acord: [],
+          loss: [],
+          hospital: [],
+          fir: [],
+          rc: [],
+          dl: [],
+        });
+      }
     },
     []
   );
@@ -94,14 +109,10 @@ const UploadPage = () => {
   };
 
   const handleFileAdd = useCallback(
-    (
-      section: keyof FileSection,
-      newFiles: FileList | null,
-      inputElement?: HTMLInputElement
-    ) => {
+    (section: keyof typeof files, newFiles: FileList | null) => {
       if (!newFiles || newFiles.length === 0) return;
 
-      const validFiles: FileWithPreview[] = [];
+      const validFiles: File[] = [];
       const errors: string[] = [];
 
       Array.from(newFiles).forEach((file) => {
@@ -109,12 +120,7 @@ const UploadPage = () => {
         if (error) {
           errors.push(error);
         } else {
-          const id = `${Date.now()}-${Math.random()}`;
-          validFiles.push({
-            file,
-            preview: URL.createObjectURL(file),
-            id,
-          });
+          validFiles.push(file);
         }
       });
 
@@ -129,27 +135,19 @@ const UploadPage = () => {
         }));
         toast.success(`Added ${validFiles.length} file(s) to ${section}`);
       }
-
-      // Reset input
-      if (inputElement) {
-        inputElement.value = "";
-      }
     },
     []
   );
 
-  const handleFileRemove = useCallback((section: keyof FileSection, fileId: string) => {
-    setFiles((prev) => {
-      const fileToRemove = prev[section].find((f) => f.id === fileId);
-      if (fileToRemove) {
-        URL.revokeObjectURL(fileToRemove.preview);
-      }
-      return {
+  const handleFileRemove = useCallback(
+    (section: keyof typeof files, index: number) => {
+      setFiles((prev) => ({
         ...prev,
-        [section]: prev[section].filter((f) => f.id !== fileId),
-      };
-    });
-  }, []);
+        [section]: prev[section].filter((_, i) => i !== index),
+      }));
+    },
+    []
+  );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -157,7 +155,7 @@ const UploadPage = () => {
   }, []);
 
   const handleDrop = useCallback(
-    (e: React.DragEvent, section: keyof FileSection) => {
+    (e: React.DragEvent, section: keyof typeof files) => {
       e.preventDefault();
       e.stopPropagation();
       handleFileAdd(section, e.dataTransfer.files);
@@ -175,21 +173,28 @@ const UploadPage = () => {
     e.preventDefault();
 
     // Validate required fields
-    if (
-      !form.name ||
-      !form.email ||
-      !form.policy_no ||
-      !form.date_of_loss ||
-      !form.claim_type ||
-      !form.description
-    ) {
-      toast.error("Please fill in all required fields");
+    if (!form.name || !form.email) {
+      toast.error("Please fill in name and email");
       return;
     }
 
-    if (files.acord.length === 0) {
-      toast.error("Please upload at least one ACORD/FNOL form");
+    if (!form.claim_type) {
+      toast.error("Please select a claim type");
       return;
+    }
+
+    // Validate files based on claim type
+    if (form.claim_type === "medical") {
+      if (files.acord.length === 0 || files.loss.length === 0 || files.hospital.length === 0) {
+        toast.error("Please upload ACORD, Loss, and Hospital Bill documents");
+        return;
+      }
+    } else if (form.claim_type === "accident") {
+      if (files.acord.length === 0 || files.loss.length === 0 || files.fir.length === 0 || 
+          files.rc.length === 0 || files.dl.length === 0) {
+        toast.error("Please upload all required documents: ACORD, Loss, FIR, RC, and DL");
+        return;
+      }
     }
 
     setLoading(true);
@@ -198,21 +203,25 @@ const UploadPage = () => {
     try {
       const formData = new FormData();
 
-      // Append form fields
-      Object.entries(form).forEach(([key, value]) => {
-        if (value) {
-          formData.append(key, value);
-        }
-      });
+      // Generate claim number
+      const claimNumber = `CLM-${Date.now()}`;
+      formData.append("claim_number", claimNumber);
+      formData.append("claim_type", form.claim_type);
+      formData.append("name", form.name);
+      formData.append("email", form.email);
 
-      // Append files - backend expects arrays
-      Object.entries(files).forEach(([sectionKey, fileList]) => {
-        if (fileList.length > 0) {
-          fileList.forEach((fileWithPreview) => {
-            formData.append(sectionKey, fileWithPreview.file);
-          });
-        }
-      });
+      // Upload files based on claim type
+      if (form.claim_type === "medical") {
+        formData.append("acord", files.acord[0]);
+        formData.append("loss", files.loss[0]);
+        formData.append("hospital", files.hospital[0]);
+      } else if (form.claim_type === "accident") {
+        formData.append("acord", files.acord[0]);
+        formData.append("loss", files.loss[0]);
+        formData.append("fir", files.fir[0]);
+        formData.append("rc", files.rc[0]);
+        formData.append("dl", files.dl[0]);
+      }
 
       const onUploadProgress = (progressEvent: AxiosProgressEvent) => {
         if (progressEvent.total) {
@@ -224,15 +233,37 @@ const UploadPage = () => {
       };
 
       const response = await uploadClaim(formData, onUploadProgress);
-      setClaimId(response.id);
-      setSuccess(true);
+      
+      // Backend returns: { claim_number, ml_scores: { fraud_score, complexity_score, severity_level }, routing, final_team }
+      const claimId = response.claim_number || response.id || claimNumber;
+      const mlScores = (response as any).ml_scores || {};
+      const fraudScore = mlScores.fraud_score || 0;
+      const complexityScore = mlScores.complexity_score || 1.0;
+      const severityLevel = mlScores.severity_level || "Low";
+      
+      setClaimId(claimId);
       setUploadProgress(100);
-      toast.success("✅ Claim Submitted Successfully!");
-
-      // Navigate to confirmation page after 2-3 seconds
-      setTimeout(() => {
-        navigate("/upload-confirmation", { state: { claimId: response.id } });
-      }, 2500);
+      
+      // Store routing result for modal
+      const responseAny = response as any;
+      setRoutingResult({
+        claimId,
+        fraudScore,
+        complexityScore,
+        severityLevel,
+        routingTeam: response.final_team || responseAny.routing?.routing_team,
+        adjuster: responseAny.final_adjuster || responseAny.routing?.adjuster,
+        routingReasons: (() => {
+          const reasons = responseAny.routing?.routing_reasons;
+          if (Array.isArray(reasons)) return reasons;
+          if (responseAny.routing?.routing_reason) return [responseAny.routing.routing_reason];
+          return [];
+        })(),
+        fullResponse: response,
+      });
+      
+      // Show routing modal
+      setShowRoutingModal(true);
     } catch (error: any) {
       const errorMessage =
         error.response?.data?.message ||
@@ -246,137 +277,48 @@ const UploadPage = () => {
   };
 
   const handleReset = useCallback(() => {
-    // Clean up object URLs
-    Object.values(files).forEach((fileList) => {
-      fileList.forEach((fileWithPreview) => {
-        URL.revokeObjectURL(fileWithPreview.preview);
-      });
-    });
-
     setForm({
       name: "",
       email: "",
-      phone: "",
-      policy_no: "",
-      date_of_loss: "",
       claim_type: "",
-      description: "",
     });
     setFiles({
       acord: [],
-      police: [],
-      assessment: [],
-      healthEvidence: [],
-      bills: [],
-      prescriptions: [],
-      vehiclePhotos: [],
-      repairEstimates: [],
+      loss: [],
+      hospital: [],
+      fir: [],
+      rc: [],
+      dl: [],
+    });
+    // Reset all file inputs
+    Object.values(fileInputRefs.current).forEach((ref) => {
+      if (ref) ref.value = "";
     });
     toast.info("Form reset");
-  }, [files]);
+  }, []);
 
-  // Memoized file upload section component to prevent unnecessary re-renders
-  const FileUploadSection = React.memo(
-    ({
-      section,
-      title,
-      required = false,
-      files: sectionFiles,
-      onAdd,
-      onRemove,
-      onDragOver,
-      onDrop,
-      inputRef,
-    }: {
-      section: keyof FileSection;
-      title: string;
-      required?: boolean;
-      files: FileWithPreview[];
-      onAdd: (files: FileList | null) => void;
-      onRemove: (fileId: string) => void;
-      onDragOver: (e: React.DragEvent) => void;
-      onDrop: (e: React.DragEvent) => void;
-      inputRef: (el: HTMLInputElement | null) => void;
-    }) => (
-      <div className="bg-[#1a1a22] border border-[#2a2a32] rounded-lg p-6 hover:border-[#a855f7]/30 transition-all duration-300">
-        <label className="block text-sm font-semibold text-[#f3f4f6] mb-4">
-          {title}
-          {required && <span className="text-[#a855f7] ml-1">*</span>}
-        </label>
+  // Handle routing modal close with redirect
+  const handleRoutingModalClose = useCallback(() => {
+    setShowRoutingModal(false);
+    if (!routingResult) return;
 
-        {/* File List */}
-        {sectionFiles.length > 0 && (
-          <div className="space-y-2 mb-4">
-            {sectionFiles.map((fileWithPreview) => (
-              <div
-                key={fileWithPreview.id}
-                className="flex items-center justify-between p-3 bg-[#0b0b0f] border border-[#2a2a32] rounded-lg group hover:border-[#a855f7]/50 transition-all duration-300"
-              >
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <FileText className="w-5 h-5 text-[#a855f7] flex-shrink-0" />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm text-[#f3f4f6] truncate group-hover:text-[#a855f7] transition-colors">
-                      {fileWithPreview.file.name}
-                    </p>
-                    <p className="text-xs text-[#9ca3af]">
-                      {formatFileSize(fileWithPreview.file.size)}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <a
-                    href={fileWithPreview.preview}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-2 text-[#a855f7] hover:text-[#c084fc] hover:bg-[#a855f7]/10 rounded transition-all duration-300"
-                    title="Open preview"
-                  >
-                    <FileText className="w-4 h-4" />
-                  </a>
-                  <button
-                    type="button"
-                    onClick={() => onRemove(fileWithPreview.id)}
-                    className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded transition-all duration-300"
-                    title="Remove file"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+    const { fraudScore } = routingResult;
+    
+    if (fraudScore >= fraudThreshold) {
+      // Above threshold → redirect to team dashboard
+      navigate("/team-dashboard", { 
+        state: { 
+          team: routingResult.routingTeam,
+          claimId: routingResult.claimId 
+        } 
+      });
+    } else {
+      // Below threshold → redirect to homepage
+      navigate("/");
+    }
+  }, [routingResult, fraudThreshold, navigate]);
 
-        {/* Upload Zone */}
-        <label
-          onDragOver={onDragOver}
-          onDrop={onDrop}
-          className="border-2 border-dashed border-[#2a2a32] rounded-lg p-8 text-center hover:border-[#a855f7] hover:bg-[#a855f7]/5 transition-all duration-300 cursor-pointer block"
-        >
-          <input
-            ref={inputRef}
-            type="file"
-            multiple
-            accept={ACCEPTED_FILE_TYPES}
-            onChange={(e) => onAdd(e.target.files)}
-            className="hidden"
-          />
-          <Upload className="w-12 h-12 mx-auto text-[#6b7280] mb-3 group-hover:text-[#a855f7] transition-colors" />
-          <p className="text-[#f3f4f6] font-medium mb-1">
-            Drag and drop PDF files here
-          </p>
-          <p className="text-[#9ca3af] text-sm">or click to browse</p>
-          <p className="text-[#6b7280] text-xs mt-2">
-            Maximum 20MB per file
-          </p>
-        </label>
-      </div>
-    )
-  );
-
-  // Conditional sections based on claim type
-  const showHealthSections = form.claim_type === "Health";
-  const showVehicleSections = form.claim_type === "Vehicle";
+  // Removed conditional sections - keeping only basic file upload
 
   if (loading) {
     return (
@@ -457,10 +399,10 @@ const UploadPage = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Claimant Details Section */}
+          {/* Simple Form Section */}
           <div className="bg-[#1a1a22] border border-[#2a2a32] rounded-lg p-6 hover:border-[#a855f7]/30 transition-all duration-300">
             <h2 className="text-xl font-semibold text-[#f3f4f6] mb-6">
-              Claimant Details <span className="text-[#a855f7]">*</span>
+              Claim Information <span className="text-[#a855f7]">*</span>
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -491,47 +433,7 @@ const UploadPage = () => {
                   placeholder="john@example.com"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-[#9ca3af] mb-2">
-                  Phone <span className="text-[#6b7280]">(optional)</span>
-                </label>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={form.phone}
-                  onChange={handleFormChange}
-                  className="w-full px-4 py-2 rounded-lg bg-[#0d0f14] border border-gray-700 text-[#f3f4f6] placeholder-[#6b7280] focus:outline-none focus:ring-2 focus:ring-[#a855f7] focus:border-[#a855f7] transition-all duration-300"
-                  placeholder="+1 (555) 123-4567"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-[#9ca3af] mb-2">
-                  Policy Number <span className="text-[#a855f7]">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="policy_no"
-                  required
-                  value={form.policy_no}
-                  onChange={handleFormChange}
-                  className="w-full px-4 py-2 rounded-lg bg-[#0d0f14] border border-gray-700 text-[#f3f4f6] placeholder-[#6b7280] focus:outline-none focus:ring-2 focus:ring-[#a855f7] focus:border-[#a855f7] transition-all duration-300"
-                  placeholder="POL-123456"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-[#9ca3af] mb-2">
-                  Date of Loss <span className="text-[#a855f7]">*</span>
-                </label>
-                <input
-                  type="date"
-                  name="date_of_loss"
-                  required
-                  value={form.date_of_loss}
-                  onChange={handleFormChange}
-                  className="w-full px-4 py-2 rounded-lg bg-[#0d0f14] border border-gray-700 text-[#f3f4f6] focus:outline-none focus:ring-2 focus:ring-[#a855f7] focus:border-[#a855f7] transition-all duration-300"
-                />
-              </div>
-              <div>
+              <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-[#9ca3af] mb-2">
                   Claim Type <span className="text-[#a855f7]">*</span>
                 </label>
@@ -543,177 +445,122 @@ const UploadPage = () => {
                   className="w-full px-4 py-2 rounded-lg bg-[#0d0f14] border border-gray-700 text-[#f3f4f6] focus:outline-none focus:ring-2 focus:ring-[#a855f7] focus:border-[#a855f7] transition-all duration-300"
                 >
                   <option value="">Select claim type</option>
-                  <option value="Vehicle">Vehicle</option>
-                  <option value="Health">Health</option>
-                  <option value="Property">Property</option>
-                  <option value="Other">Other</option>
+                  <option value="medical">Medical</option>
+                  <option value="accident">Accident</option>
                 </select>
               </div>
             </div>
-            <div className="mt-4">
-              <label className="block text-sm font-medium text-[#9ca3af] mb-2">
-                Description <span className="text-[#a855f7]">*</span>
-              </label>
-              <textarea
-                name="description"
-                required
-                rows={4}
-                value={form.description}
-                onChange={handleFormChange}
-                className="w-full px-4 py-2 rounded-lg bg-[#0d0f14] border border-gray-700 text-[#f3f4f6] placeholder-[#6b7280] focus:outline-none focus:ring-2 focus:ring-[#a855f7] focus:border-[#a855f7] transition-all duration-300 resize-none"
-                placeholder="Describe what happened..."
-              />
-            </div>
           </div>
 
-          {/* Always Visible Upload Sections */}
-          <FileUploadSection
-            section="acord"
-            title="ACORD / FNOL Form"
-            required
-            files={files.acord}
-            onAdd={(fileList) =>
-              handleFileAdd("acord", fileList, fileInputRefs.current.acord || undefined)
-            }
-            onRemove={(fileId) => handleFileRemove("acord", fileId)}
-            onDragOver={handleDragOver}
-            onDrop={(e) => handleDrop(e, "acord")}
-            inputRef={(el) => {
-              fileInputRefs.current.acord = el;
-            }}
-          />
-
-          <FileUploadSection
-            section="police"
-            title="Police Report"
-            files={files.police}
-            onAdd={(fileList) =>
-              handleFileAdd("police", fileList, fileInputRefs.current.police || undefined)
-            }
-            onRemove={(fileId) => handleFileRemove("police", fileId)}
-            onDragOver={handleDragOver}
-            onDrop={(e) => handleDrop(e, "police")}
-            inputRef={(el) => {
-              fileInputRefs.current.police = el;
-            }}
-          />
-
-          <FileUploadSection
-            section="assessment"
-            title="Loss Assessment / Survey Report"
-            files={files.assessment}
-            onAdd={(fileList) =>
-              handleFileAdd(
-                "assessment",
-                fileList,
-                fileInputRefs.current.assessment || undefined
-              )
-            }
-            onRemove={(fileId) => handleFileRemove("assessment", fileId)}
-            onDragOver={handleDragOver}
-            onDrop={(e) => handleDrop(e, "assessment")}
-            inputRef={(el) => {
-              fileInputRefs.current.assessment = el;
-            }}
-          />
-
-          {/* Health Claim Type Sections */}
-          {showHealthSections && (
+          {/* File Upload Sections - Conditional based on claim type */}
+          {form.claim_type === "medical" && (
             <>
+              {/* Medical: ACORD */}
               <FileUploadSection
-                section="healthEvidence"
-                title="Health Evidence (Medical Scans, Lab Reports)"
-                files={files.healthEvidence}
-                onAdd={(fileList) =>
-                  handleFileAdd(
-                    "healthEvidence",
-                    fileList,
-                    fileInputRefs.current.healthEvidence || undefined
-                  )
-                }
-                onRemove={(fileId) => handleFileRemove("healthEvidence", fileId)}
+                section="acord"
+                title="ACORD Form"
+                required
+                files={files.acord}
+                onAdd={(fileList) => handleFileAdd("acord", fileList)}
+                onRemove={(index) => handleFileRemove("acord", index)}
                 onDragOver={handleDragOver}
-                onDrop={(e) => handleDrop(e, "healthEvidence")}
-                inputRef={(el) => {
-                  fileInputRefs.current.healthEvidence = el;
-                }}
+                onDrop={(e) => handleDrop(e, "acord")}
+                inputRef={(el) => { fileInputRefs.current.acord = el; }}
               />
-
+              
+              {/* Medical: Loss */}
               <FileUploadSection
-                section="bills"
-                title="Bills / Invoices"
-                files={files.bills}
-                onAdd={(fileList) =>
-                  handleFileAdd("bills", fileList, fileInputRefs.current.bills || undefined)
-                }
-                onRemove={(fileId) => handleFileRemove("bills", fileId)}
+                section="loss"
+                title="Loss Report"
+                required
+                files={files.loss}
+                onAdd={(fileList) => handleFileAdd("loss", fileList)}
+                onRemove={(index) => handleFileRemove("loss", index)}
                 onDragOver={handleDragOver}
-                onDrop={(e) => handleDrop(e, "bills")}
-                inputRef={(el) => {
-                  fileInputRefs.current.bills = el;
-                }}
+                onDrop={(e) => handleDrop(e, "loss")}
+                inputRef={(el) => { fileInputRefs.current.loss = el; }}
               />
-
+              
+              {/* Medical: Hospital Bill */}
               <FileUploadSection
-                section="prescriptions"
-                title="Prescriptions"
-                files={files.prescriptions}
-                onAdd={(fileList) =>
-                  handleFileAdd(
-                    "prescriptions",
-                    fileList,
-                    fileInputRefs.current.prescriptions || undefined
-                  )
-                }
-                onRemove={(fileId) => handleFileRemove("prescriptions", fileId)}
+                section="hospital"
+                title="Hospital Bill"
+                required
+                files={files.hospital}
+                onAdd={(fileList) => handleFileAdd("hospital", fileList)}
+                onRemove={(index) => handleFileRemove("hospital", index)}
                 onDragOver={handleDragOver}
-                onDrop={(e) => handleDrop(e, "prescriptions")}
-                inputRef={(el) => {
-                  fileInputRefs.current.prescriptions = el;
-                }}
+                onDrop={(e) => handleDrop(e, "hospital")}
+                inputRef={(el) => { fileInputRefs.current.hospital = el; }}
               />
             </>
           )}
 
-          {/* Vehicle Claim Type Sections */}
-          {showVehicleSections && (
+          {form.claim_type === "accident" && (
             <>
+              {/* Accident: ACORD */}
               <FileUploadSection
-                section="vehiclePhotos"
-                title="Vehicle Photos"
-                files={files.vehiclePhotos}
-                onAdd={(fileList) =>
-                  handleFileAdd(
-                    "vehiclePhotos",
-                    fileList,
-                    fileInputRefs.current.vehiclePhotos || undefined
-                  )
-                }
-                onRemove={(fileId) => handleFileRemove("vehiclePhotos", fileId)}
+                section="acord"
+                title="ACORD Form"
+                required
+                files={files.acord}
+                onAdd={(fileList) => handleFileAdd("acord", fileList)}
+                onRemove={(index) => handleFileRemove("acord", index)}
                 onDragOver={handleDragOver}
-                onDrop={(e) => handleDrop(e, "vehiclePhotos")}
-                inputRef={(el) => {
-                  fileInputRefs.current.vehiclePhotos = el;
-                }}
+                onDrop={(e) => handleDrop(e, "acord")}
+                inputRef={(el) => { fileInputRefs.current.acord = el; }}
               />
-
+              
+              {/* Accident: Loss */}
               <FileUploadSection
-                section="repairEstimates"
-                title="Repair Estimates"
-                files={files.repairEstimates}
-                onAdd={(fileList) =>
-                  handleFileAdd(
-                    "repairEstimates",
-                    fileList,
-                    fileInputRefs.current.repairEstimates || undefined
-                  )
-                }
-                onRemove={(fileId) => handleFileRemove("repairEstimates", fileId)}
+                section="loss"
+                title="Loss Report"
+                required
+                files={files.loss}
+                onAdd={(fileList) => handleFileAdd("loss", fileList)}
+                onRemove={(index) => handleFileRemove("loss", index)}
                 onDragOver={handleDragOver}
-                onDrop={(e) => handleDrop(e, "repairEstimates")}
-                inputRef={(el) => {
-                  fileInputRefs.current.repairEstimates = el;
-                }}
+                onDrop={(e) => handleDrop(e, "loss")}
+                inputRef={(el) => { fileInputRefs.current.loss = el; }}
+              />
+              
+              {/* Accident: FIR */}
+              <FileUploadSection
+                section="fir"
+                title="FIR (Police Report)"
+                required
+                files={files.fir}
+                onAdd={(fileList) => handleFileAdd("fir", fileList)}
+                onRemove={(index) => handleFileRemove("fir", index)}
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, "fir")}
+                inputRef={(el) => { fileInputRefs.current.fir = el; }}
+              />
+              
+              {/* Accident: RC */}
+              <FileUploadSection
+                section="rc"
+                title="RC (Registration Certificate)"
+                required
+                files={files.rc}
+                onAdd={(fileList) => handleFileAdd("rc", fileList)}
+                onRemove={(index) => handleFileRemove("rc", index)}
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, "rc")}
+                inputRef={(el) => { fileInputRefs.current.rc = el; }}
+              />
+              
+              {/* Accident: DL */}
+              <FileUploadSection
+                section="dl"
+                title="DL (Driving License)"
+                required
+                files={files.dl}
+                onAdd={(fileList) => handleFileAdd("dl", fileList)}
+                onRemove={(index) => handleFileRemove("dl", index)}
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, "dl")}
+                inputRef={(el) => { fileInputRefs.current.dl = el; }}
               />
             </>
           )}
@@ -744,6 +591,16 @@ const UploadPage = () => {
           </div>
         </form>
       </div>
+
+      {/* Routing Modal */}
+      {showRoutingModal && routingResult && (
+        <RoutingModal
+          open={showRoutingModal}
+          onClose={handleRoutingModalClose}
+          routingResult={routingResult}
+          fraudThreshold={fraudThreshold}
+        />
+      )}
     </div>
   );
 };

@@ -98,7 +98,7 @@ const ClaimDetailPage = () => {
           <div className="flex items-start justify-between mb-4">
             <div>
               <h1 className="text-3xl font-bold text-[#f3f4f6] mb-2">
-                {claim.id}
+                {(claim as any).claim_number || claim.id}
               </h1>
               <p className="text-[#9ca3af]">{claim.claimant}</p>
             </div>
@@ -228,79 +228,310 @@ const ClaimDetailPage = () => {
             </div>
           </div>
 
-          {/* Right Column - Analysis & Attachments */}
+          {/* Right Column - Claim Details, ML Scores, Routing, & Documents */}
           <div className="space-y-6">
-            {/* Confidence Score */}
+            {/* Claim Information Card */}
             <div className="bg-[#1a1a22] border border-[#2a2a32] rounded-lg p-6 hover:border-[#a855f7]/30 transition-all duration-300">
               <h3 className="text-lg font-semibold text-[#f3f4f6] mb-4">
-                Confidence Score
+                Claim Information
               </h3>
               <div className="space-y-3">
                 <div>
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm text-[#9ca3af]">
-                      AI Confidence
-                    </span>
-                    <span className="text-2xl font-bold text-[#a855f7]">
-                      {(claim.confidence * 100).toFixed(0)}%
-                    </span>
-                  </div>
-                  <div className="w-full bg-[#0b0b0f] rounded-full h-3">
-                    <div
-                      className="bg-gradient-to-r from-[#a855f7] to-[#ec4899] h-3 rounded-full transition-all shadow-lg shadow-[#a855f7]/30"
-                      style={{ width: `${claim.confidence * 100}%` }}
-                    ></div>
-                  </div>
-                </div>
-                <p className="text-xs text-[#9ca3af]">
-                  Based on AI analysis of uploaded documents and form data
-                </p>
-              </div>
-            </div>
-
-            {/* Attachments */}
-            <div className="bg-[#1a1a22] border border-[#2a2a32] rounded-lg p-6 hover:border-[#a855f7]/30 transition-all duration-300">
-              <h3 className="text-lg font-semibold text-[#f3f4f6] mb-4">
-                Attachments
-              </h3>
-              <div className="space-y-2">
-                {claim.attachments && claim.attachments.length > 0 ? (
-                  claim.attachments.map((attachment) => (
-                    <button
-                      key={attachment.filename}
-                      onClick={() =>
-                        setSelectedPdf({
-                          filename: attachment.filename,
-                          url: attachment.url,
-                        })
-                      }
-                      className="w-full flex items-center justify-between p-3 hover:bg-[#0b0b0f] rounded-lg transition-all duration-300 text-left group"
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <FileText className="w-5 h-5 text-[#a855f7] flex-shrink-0 group-hover:text-[#c084fc] transition-colors" />
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium text-[#f3f4f6] truncate group-hover:text-[#a855f7] transition-colors">
-                            {attachment.filename}
-                          </p>
-                          {attachment.size && (
-                            <p className="text-xs text-[#9ca3af]">
-                              {attachment.size}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      <span className="text-[#a855f7] text-sm flex-shrink-0 group-hover:text-[#c084fc] transition-colors">
-                        View
-                      </span>
-                    </button>
-                  ))
-                ) : (
-                  <p className="text-[#9ca3af] text-sm">
-                    No attachments available
+                  <p className="text-xs text-[#9ca3af] mb-1">Claim Type</p>
+                  <p className="text-sm font-medium text-[#f3f4f6] capitalize">
+                    {(claim as any).claim_type || claim.loss_type || "N/A"}
                   </p>
+                </div>
+                <div>
+                  <p className="text-xs text-[#9ca3af] mb-1">Claim ID</p>
+                  <p className="text-sm font-mono text-[#a855f7] font-medium">
+                    {(claim as any).claim_number || claim.id || "N/A"}
+                  </p>
+                </div>
+                {(claim as any).ml_scores && (
+                  <div>
+                    <p className="text-xs text-[#9ca3af] mb-1">Damage Amount</p>
+                    <p className="text-sm font-medium text-[#f3f4f6]">
+                      {(() => {
+                        const analyses = (claim as any).analyses || {};
+                        const lossAnalysis = analyses.loss || {};
+                        const damage = lossAnalysis.damage_estimate || lossAnalysis.estimated_damage || "N/A";
+                        return typeof damage === "number" ? `$${damage.toLocaleString()}` : damage;
+                      })()}
+                    </p>
+                  </div>
                 )}
               </div>
             </div>
+
+            {/* ML Model Scores */}
+            <div className="bg-[#1a1a22] border border-[#2a2a32] rounded-lg p-6 hover:border-[#a855f7]/30 transition-all duration-300">
+              <h3 className="text-lg font-semibold text-[#f3f4f6] mb-4">
+                ML Model Scores
+              </h3>
+              <div className="space-y-4">
+                {/* Fraud Score */}
+                {(() => {
+                  const mlScores = (claim as any).ml_scores || {};
+                  const fraudScore = (claim as any).fraud_score ?? mlScores.fraud_score ?? null;
+                  return fraudScore !== null && (
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm text-[#9ca3af]">Fraud Score</span>
+                        <span className={`text-lg font-bold ${
+                          fraudScore >= 0.6 ? "text-red-400" :
+                          fraudScore > 0.3 ? "text-yellow-400" :
+                          "text-green-400"
+                        }`}>
+                          {(fraudScore * 100).toFixed(1)}%
+                        </span>
+                      </div>
+                      <div className="w-full bg-[#0b0b0f] rounded-full h-2">
+                        <div
+                          className={`h-2 rounded-full transition-all ${
+                            fraudScore >= 0.6 ? "bg-red-500" :
+                            fraudScore > 0.3 ? "bg-yellow-500" :
+                            "bg-green-500"
+                          }`}
+                          style={{ width: `${Math.min(fraudScore * 100, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Complexity Score */}
+                {(() => {
+                  const mlScores = (claim as any).ml_scores || {};
+                  const complexityScore = (claim as any).complexity_score ?? mlScores.complexity_score ?? null;
+                  return complexityScore !== null && (
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm text-[#9ca3af]">Complexity Score</span>
+                        <span className="text-lg font-bold text-[#a855f7]">
+                          {complexityScore.toFixed(1)}
+                        </span>
+                      </div>
+                      <div className="w-full bg-[#0b0b0f] rounded-full h-2">
+                        <div
+                          className="h-2 rounded-full transition-all bg-gradient-to-r from-[#a855f7] to-[#ec4899]"
+                          style={{ width: `${Math.min((complexityScore / 5) * 100, 100)}%` }}
+                        />
+                      </div>
+                      <p className="text-xs text-[#9ca3af] mt-1">
+                        {complexityScore >= 3.5 ? "High Complexity" :
+                         complexityScore >= 2 ? "Medium Complexity" :
+                         "Low Complexity"}
+                      </p>
+                    </div>
+                  );
+                })()}
+
+                {/* Severity Level */}
+                {(() => {
+                  const mlScores = (claim as any).ml_scores || {};
+                  const severityLevel = (claim as any).severity_level ?? mlScores.severity_level ?? claim.severity ?? null;
+                  return severityLevel && (
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm text-[#9ca3af]">Severity Level</span>
+                        <span className={`text-lg font-bold ${
+                          severityLevel === "High" ? "text-red-400" :
+                          severityLevel === "Medium" ? "text-yellow-400" :
+                          "text-green-400"
+                        }`}>
+                          {severityLevel}
+                        </span>
+                      </div>
+                      <div className="w-full bg-[#0b0b0f] rounded-full h-2">
+                        <div
+                          className={`h-2 rounded-full transition-all ${
+                            severityLevel === "High" ? "bg-red-500" :
+                            severityLevel === "Medium" ? "bg-yellow-500" :
+                            "bg-green-500"
+                          }`}
+                          style={{
+                            width: severityLevel === "High" ? "100%" :
+                                   severityLevel === "Medium" ? "66%" : "33%"
+                          }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+
+            {/* Routing Information */}
+            {(() => {
+              const routing = (claim as any).routing || {};
+              const routingTeam = (claim as any).routing_team || (claim as any).final_team || claim.queue || "";
+              const adjuster = (claim as any).adjuster || (claim as any).final_adjuster || routing.adjuster || "";
+              const routingReasons = routing.routing_reasons || routing.routing_reason || [];
+              const reasons = Array.isArray(routingReasons) ? routingReasons : [routingReasons].filter(Boolean);
+
+              if (routingTeam || adjuster || reasons.length > 0) {
+                return (
+                  <div className="bg-[#1a1a22] border border-[#2a2a32] rounded-lg p-6 hover:border-[#a855f7]/30 transition-all duration-300">
+                    <h3 className="text-lg font-semibold text-[#f3f4f6] mb-4">
+                      Routing Information
+                    </h3>
+                    <div className="space-y-3">
+                      {routingTeam && (
+                        <div>
+                          <p className="text-xs text-[#9ca3af] mb-1">Assigned Team</p>
+                          <p className="text-sm font-medium text-[#f3f4f6]">{routingTeam}</p>
+                          <p className="text-xs text-[#6b7280] mt-1">
+                            {routingTeam.includes("Health Dept") && routingTeam.includes("High") ? "Health Department - High Complexity Team" :
+                             routingTeam.includes("Health Dept") && routingTeam.includes("Mid") ? "Health Department - Medium Complexity Team" :
+                             routingTeam.includes("Health Dept") ? "Health Department - Standard Processing Team" :
+                             routingTeam.includes("Accident Dept") && routingTeam.includes("High") ? "Accident Department - High Complexity Team" :
+                             routingTeam.includes("Accident Dept") && routingTeam.includes("Mid") ? "Accident Department - Medium Complexity Team" :
+                             routingTeam.includes("Accident Dept") ? "Accident Department - Standard Processing Team" :
+                             routingTeam.includes("SIU") || routingTeam.includes("Fraud") ? "Special Investigation Unit" :
+                             ""}
+                          </p>
+                        </div>
+                      )}
+                      {adjuster && (
+                        <div>
+                          <p className="text-xs text-[#9ca3af] mb-1">Assigned Adjuster</p>
+                          <p className="text-sm font-medium text-[#f3f4f6]">{adjuster}</p>
+                        </div>
+                      )}
+                      {reasons.length > 0 && (
+                        <div>
+                          <p className="text-xs text-[#9ca3af] mb-2">Transfer Reason</p>
+                          <ul className="list-disc list-inside space-y-1">
+                            {reasons.map((reason: string, idx: number) => (
+                              <li key={idx} className="text-sm text-[#a855f7]">{reason}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              }
+              return null;
+            })()}
+
+            {/* Proof / Documents */}
+            <div className="bg-[#1a1a22] border border-[#2a2a32] rounded-lg p-6 hover:border-[#a855f7]/30 transition-all duration-300">
+              <h3 className="text-lg font-semibold text-[#f3f4f6] mb-4 flex items-center gap-2">
+                <FileText className="w-5 h-5 text-[#a855f7]" />
+                Proof / Documents
+              </h3>
+              <div className="space-y-2">
+                {(() => {
+                  const files = (claim as any).files || {};
+                  // Ensure attachments is always an array
+                  const attachments = Array.isArray(claim.attachments) 
+                    ? claim.attachments 
+                    : (claim.attachments && typeof claim.attachments === 'object' 
+                        ? Object.values(claim.attachments).filter((item: any) => item && typeof item === 'object')
+                        : []);
+                  
+                  // Combine files from both sources
+                  const allFiles: Array<{ filename: string; url: string; type?: string }> = [];
+                  
+                  // Add files from claim.files object
+                  if (files && typeof files === 'object' && !Array.isArray(files)) {
+                    Object.entries(files).forEach(([key, value]) => {
+                      if (value && typeof value === "string") {
+                        allFiles.push({
+                          filename: `${key.toUpperCase()}.pdf`,
+                          url: value,
+                          type: key
+                        });
+                      }
+                    });
+                  }
+                  
+                  // Add attachments (ensure it's an array before forEach)
+                  if (Array.isArray(attachments)) {
+                    attachments.forEach((att: any) => {
+                      if (att && (att.filename || att.url)) {
+                        allFiles.push({
+                          filename: att.filename || att.url?.split('/').pop() || 'document.pdf',
+                          url: att.url || att,
+                          type: (att.filename || att.url || '').toLowerCase().includes("acord") ? "acord" :
+                                (att.filename || att.url || '').toLowerCase().includes("loss") ? "loss" :
+                                (att.filename || att.url || '').toLowerCase().includes("hospital") ? "hospital" :
+                                (att.filename || att.url || '').toLowerCase().includes("fir") ? "fir" :
+                                (att.filename || att.url || '').toLowerCase().includes("rc") ? "rc" :
+                                (att.filename || att.url || '').toLowerCase().includes("dl") ? "dl" :
+                                "other"
+                        });
+                      }
+                    });
+                  }
+
+                  if (allFiles.length > 0) {
+                    return allFiles.map((file, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() =>
+                          setSelectedPdf({
+                            filename: file.filename,
+                            url: file.url,
+                          })
+                        }
+                        className="w-full flex items-center justify-between p-3 hover:bg-[#0b0b0f] rounded-lg transition-all duration-300 text-left group border border-[#2a2a32] hover:border-[#a855f7]/50"
+                      >
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                          <FileText className="w-5 h-5 text-[#a855f7] flex-shrink-0 group-hover:text-[#c084fc] transition-colors" />
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium text-[#f3f4f6] truncate group-hover:text-[#a855f7] transition-colors">
+                              {file.filename}
+                            </p>
+                            {file.type && (
+                              <p className="text-xs text-[#9ca3af] capitalize">{file.type} Document</p>
+                            )}
+                          </div>
+                        </div>
+                        <span className="text-[#a855f7] text-sm flex-shrink-0 group-hover:text-[#c084fc] transition-colors ml-2">
+                          View →
+                        </span>
+                      </button>
+                    ));
+                  }
+                  return (
+                    <p className="text-[#9ca3af] text-sm">
+                      No documents available
+                    </p>
+                  );
+                })()}
+              </div>
+            </div>
+
+            {/* Confidence Score (Legacy - keeping for compatibility) */}
+            {claim.confidence && (
+              <div className="bg-[#1a1a22] border border-[#2a2a32] rounded-lg p-6 hover:border-[#a855f7]/30 transition-all duration-300">
+                <h3 className="text-lg font-semibold text-[#f3f4f6] mb-4">
+                  Confidence Score
+                </h3>
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm text-[#9ca3af]">AI Confidence</span>
+                      <span className="text-2xl font-bold text-[#a855f7]">
+                        {(claim.confidence * 100).toFixed(0)}%
+                      </span>
+                    </div>
+                    <div className="w-full bg-[#0b0b0f] rounded-full h-3">
+                      <div
+                        className="bg-gradient-to-r from-[#a855f7] to-[#ec4899] h-3 rounded-full transition-all shadow-lg shadow-[#a855f7]/30"
+                        style={{ width: `${claim.confidence * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                  <p className="text-xs text-[#9ca3af]">
+                    Based on AI analysis of uploaded documents and form data
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

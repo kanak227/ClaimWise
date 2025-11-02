@@ -191,24 +191,63 @@ def extract_fields_from_text(text: str, source: str) -> Dict:
         val = m.group(1).lower()
         d["injuries_reported"] = 1 if val in ("true", "yes", "1") else 0
 
-    # estimated damage
+    # estimated damage / cost extraction (works for both vehicle and health claims)
     cost = None
-    for key in ("estimated damage cost", "estimated damage", "damage estimate", "damage cost"):
+    # Try multiple cost-related keywords
+    for key in ("estimated damage cost", "estimated damage", "damage estimate", "damage cost", 
+                "total amount", "total cost", "bill amount", "charges", "amount due", 
+                "claim amount", "settlement amount"):
         idx = text.lower().find(key)
         if idx != -1:
-            tail = text[idx: idx + 120]
+            tail = text[idx: idx + 150]  # Increased search window
             mm = MONEY_PAT.search(tail)
             if mm:
                 cost = to_float_money(mm.group(1))
-                break
-    if cost is not None:
+                if cost and cost > 0:
+                    break
+    
+    # Fallback: look for any large money amounts in the document
+    if cost is None or cost == 0:
+        all_amounts = MONEY_PAT.findall(text)
+        money_values = []
+        for amt_str in all_amounts[:10]:  # Check first 10 amounts found
+            val = to_float_money(amt_str)
+            if val and val > 100:  # Only consider amounts > $100
+                money_values.append(val)
+        if money_values:
+            # Use the largest amount found as likely cost
+            cost = max(money_values)
+    
+    if cost is not None and cost > 0:
         d["estimated_damage_cost"] = cost
+        # Also store as total_amount for health claims
+        if source == "hospital":
+            d["total_amount"] = cost
 
     # total loss (loss reports often state explicitly)
     if re.search(r"total\s*loss\s*:\s*(true|yes|1)", text, re.IGNORECASE):
         d["total_loss_flag"] = 1
     elif re.search(r"total\s*loss\s*:\s*(false|no|0)", text, re.IGNORECASE):
         d["total_loss_flag"] = 0
+    
+    # Additional severity indicators from text
+    # Look for severity keywords in the text itself
+    severity_keywords_high = ["critical", "severe", "major", "catastrophic", "totaled", "write-off", 
+                              "life-threatening", "hospitalized", "surgery", "fracture", "broken"]
+    severity_keywords_med = ["moderate", "significant", "substantial", "serious", "injury", "damaged"]
+    
+    text_lower = text.lower()
+    high_severity_count = sum(1 for kw in severity_keywords_high if kw in text_lower)
+    med_severity_count = sum(1 for kw in severity_keywords_med if kw in text_lower)
+    
+    if high_severity_count >= 2:
+        d["text_severity_indicator"] = "high"
+    elif high_severity_count >= 1 or med_severity_count >= 2:
+        d["text_severity_indicator"] = "medium"
+    elif med_severity_count >= 1:
+        d["text_severity_indicator"] = "low"
+    else:
+        d["text_severity_indicator"] = None
 
     return d
 
@@ -291,14 +330,92 @@ def build_features(ac: pd.Series, pr: Optional[pd.Series], lr: Optional[pd.Serie
 
     inconsistency = (damage_diff + inj_mismatch + min(date_diff_days/10,1) + (1-loc_match) + (1-veh_match)) / 5.0
 
-    # rough severity
-    severity = "Low"
-    if (loss_cost or acord_cost) and max(loss_cost or 0, acord_cost or 0) > 200000:
+    # Enhanced severity calculation - considers multiple real-world factors
+    severity_score = 0  # 0-10 scale
+    
+    # Factor 1: Damage amount (0-4 points)
+    max_cost = max(loss_cost or 0, acord_cost or 0)
+    if max_cost > 200000:
+        severity_score += 4  # Very high damage
+    elif max_cost > 100000:
+        severity_score += 3  # High damage
+    elif max_cost > 50000:
+        severity_score += 2  # Medium damage
+    elif max_cost > 20000:
+        severity_score += 1  # Low-medium damage
+    
+    # Factor 2: Injuries reported (0-3 points)
+    injuries_reported = (
+        1 if ac.get("injuries_reported") == 1 else
+        1 if get(lr, "injuries_reported") == 1 else
+        1 if get(pr, "injuries_reported") == 1 else
+        0
+    )
+    severity_score += injuries_reported * 2  # Injuries are significant
+    if inj_mismatch == 1:
+        severity_score += 1  # Injury mismatch increases severity
+    
+    # Factor 3: Total loss (0-2 points)
+    total_loss = get(lr, "total_loss_flag") == 1
+    if total_loss:
+        severity_score += 2
+    
+    # Factor 4: Document inconsistencies and complexity (0-2 points)
+    # High inconsistency suggests complex/difficult case
+    if inconsistency > 0.5:
+        severity_score += 2
+    elif inconsistency > 0.3:
+        severity_score += 1
+    
+    # Factor 5: Date discrepancies (0-1 point)
+    if date_diff_days > 30:
+        severity_score += 1  # Large date gaps indicate complexity
+    
+    # Factor 6: Missing or mismatched critical documents (0-1 point)
+    if loc_match < 0.5 or veh_match < 0.5:
+        severity_score += 1  # Location/vehicle mismatches indicate problems
+    
+    # Factor 7: Health claims - consider hospital costs
+    hospital_cost = get(hospital, "estimated_damage_cost") or get(hospital, "total_amount") or 0
+    if hospital_cost > 100000:
+        severity_score += 3
+    elif hospital_cost > 50000:
+        severity_score += 2
+    elif hospital_cost > 20000:
+        severity_score += 1
+    
+    # Factor 8: Text-based severity indicators (when cost data is missing)
+    # Use text analysis as a fallback when monetary data isn't available
+    text_severity = (
+        get(lr, "text_severity_indicator") or
+        get(ac, "text_severity_indicator") or
+        get(pr, "text_severity_indicator") or
+        get(hospital, "text_severity_indicator")
+    )
+    if text_severity == "high":
+        severity_score += 2
+    elif text_severity == "medium":
+        severity_score += 1
+    
+    # Factor 9: Document completeness and quality (0-1 point)
+    # More documents = potentially more complex case
+    docs_count = sum(1 for doc in [ac, pr, lr, rc, dl, hospital] if doc is not None)
+    if docs_count >= 5:
+        severity_score += 0.5  # Multiple documents suggest complexity
+    if docs_count <= 2:
+        severity_score -= 0.5  # Very few documents might be incomplete
+    
+    # Ensure severity_score is non-negative
+    severity_score = max(0, severity_score)
+    
+    # Convert severity_score (0-10+) to severity level
+    # More realistic distribution: High >= 6, Medium >= 3, Low < 3
+    if severity_score >= 6:
         severity = "High"
-    elif (loss_cost or acord_cost) and max(loss_cost or 0, acord_cost or 0) > 80000:
+    elif severity_score >= 3:
         severity = "Medium"
-    if (get(lr, "total_loss_flag") == 1) or inj_mismatch == 1:
-        severity = "High"
+    else:
+        severity = "Low"
 
     # rough complexity
     complexity = 1 + int(inconsistency > 0.2) + int(inconsistency > 0.4) + int(inconsistency > 0.6)

@@ -11,6 +11,7 @@ import UploadConfirmation from "./pages/UploadConfirmation";
 import TeamClaimsPage from "./pages/TeamClaimsPage";
 import ClaimDetailPage from "./pages/ClaimDetailPage";
 import DashboardPage from "./pages/DashboardPage";
+import TeamDashboardPage from "./pages/TeamDashboardPage";
 import RulesPage from "./pages/RulesPage";
 import QueuesPage from "./pages/QueuesPage";
 import NotFound from "./pages/NotFound";
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/team" element={<TeamClaimsPage />} />
           <Route path="/team/claims/:id" element={<ClaimDetailPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/team-dashboard" element={<TeamDashboardPage />} />
           <Route path="/rules" element={<RulesPage />} />
           <Route path="/queues" element={<QueuesPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -1,7 +1,33 @@
-fastapi
-uvicorn
-PyPDF2
-PyMuPDF
-Pillow
-pytesseract
-jsonschema
+# FastAPI and web server
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+python-multipart>=0.0.6
+
+# PDF processing
+PyPDF2>=3.0.0
+PyMuPDF>=1.24.0
+pdfplumber>=0.11.0
+
+# Image processing and OCR
+Pillow>=10.0.0
+pytesseract>=0.3.10
+
+# Validation
+jsonschema>=4.19.0
+
+# ML Dependencies
+pandas>=2.0.0
+numpy>=1.26.0
+scikit-learn>=1.4.0
+joblib>=1.3.0
+textblob>=0.17.1
+
+# Pathway for real-time data processing and reactive routing
+# NOTE: Pathway is ONLY available on Linux/macOS, NOT Windows
+# The system will gracefully fall back to standard routing on Windows
+# To install on Linux/macOS: pip install pathway
+# Do NOT install on Windows - it will fail
+# pathway  # Only install on Linux/macOS systems
+
+# Additional utilities
+python-dateutil>=2.8.2

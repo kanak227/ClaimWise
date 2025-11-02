@@ -53,22 +53,42 @@ export interface FetchClaimsParams {
 }
 
 // Upload a new claim with progress tracking
+// Backend expects: claim_number (Form field) and file (File)
 export const uploadClaim = async (
   formData: FormData,
   onUploadProgress?: (progressEvent: AxiosProgressEvent) => void
 ) => {
-  const response = await api.post("/api/claims/upload", formData, {
+  // Backend endpoint is /upload, not /api/claims/upload
+  // Backend expects: claim_number and file
+  // If formData has multiple files, we send the first ACORD file
+  const response = await api.post("/upload", formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
     onUploadProgress,
   });
 
-  return response.data as { id: string };
+  return response.data as {
+    id?: string;
+    claim_number: string;
+    final_team: string;
+    final_adjuster?: string;
+    ml_scores?: {
+      fraud_score?: number;
+      complexity_score?: number;
+      severity_level?: string;
+    };
+    routing?: {
+      routing_team?: string;
+      adjuster?: string;
+      routing_reasons?: string[];
+    };
+    [key: string]: any;
+  };
 };
 
 // Fetch all claims
-export const fetchClaims = async (params: FetchClaimsParams = {}) => {
+export const getClaims = async (params: FetchClaimsParams = {}) => {
   const queryParams = new URLSearchParams();
   if (params.limit) queryParams.append("limit", params.limit.toString());
   if (params.offset) queryParams.append("offset", params.offset.toString());
@@ -86,6 +106,9 @@ export const fetchClaims = async (params: FetchClaimsParams = {}) => {
 
   return response.json() as Promise<ClaimResponse[]>;
 };
+
+// Alias for backwards compatibility
+export const fetchClaims = getClaims;
 
 // Fetch single claim detail
 export const fetchClaim = async (id: string) => {
