@@ -148,3 +148,30 @@ export const fetchQueues = async () => {
 
   return response.json() as Promise<Queue[]>;
 };
+
+// Auto upload a random sample claim (backend /upload/auto)
+export const autoUploadSample = async (claimType?: 'medical' | 'accident') => {
+  const params = new URLSearchParams();
+  if (claimType) params.append('claim_type', claimType);
+  const response = await fetch(`${API_BASE_URL}/upload/auto?${params.toString()}`);
+  if (!response.ok) {
+    throw new Error('Failed to auto-upload sample claim');
+  }
+  return response.json();
+};
+
+// Select (but do not upload/process) a sample file set for manual submission
+export const autoSelectSample = async (claimType?: 'medical' | 'accident') => {
+  const params = new URLSearchParams();
+  if (claimType) params.append('claim_type', claimType);
+  const response = await fetch(`${API_BASE_URL}/upload/auto/select?${params.toString()}`);
+  if (!response.ok) {
+    throw new Error('Failed to select sample set');
+  }
+  return response.json() as Promise<{
+    claim_type: string;
+    claim_number_base: string;
+    files: Record<string, string>; // { section: /upload/auto/file?path=... }
+    required: string[];
+  }>;
+};

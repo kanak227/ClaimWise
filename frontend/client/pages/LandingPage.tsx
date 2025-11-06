@@ -5,7 +5,7 @@ import { Zap, Shield, Brain, ArrowRight, Sparkles } from "lucide-react";
 const LandingPage = () => {
   const navigate = useNavigate();
 
-  const containerVariants = {
+  const containerVariants: import("framer-motion").Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -16,7 +16,7 @@ const LandingPage = () => {
     },
   };
 
-  const itemVariants = {
+  const itemVariants: import("framer-motion").Variants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,
@@ -25,7 +25,7 @@ const LandingPage = () => {
     },
   };
 
-  const blobVariants = {
+  const blobVariants: import("framer-motion").Variants = {
     animate: {
       x: [0, 100, 0],
       y: [0, -100, 0],
@@ -33,7 +33,7 @@ const LandingPage = () => {
       transition: {
         duration: 20,
         repeat: Infinity,
-        ease: "easeInOut",
+        ease: [0.42, 0, 0.58, 1],
       },
     },
   };

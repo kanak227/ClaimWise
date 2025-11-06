@@ -1,4 +1,5 @@
-import { DemoResponse } from "@shared/api";
+// Note: Demo types are optional; keep loose to avoid build errors if shared types are unavailable
+type DemoResponse = { message: string };
 import { useEffect, useState } from "react";
 
 export default function Index() {

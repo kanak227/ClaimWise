@@ -374,44 +374,52 @@ const ClaimDetailPage = () => {
 
             {/* AI Analysis */}
             {(claim as any).ai_analysis && (
-            <div className="bg-[#1a1a22] border border-[#2a2a32] rounded-lg p-6 hover:border-[#a855f7]/30 transition-all duration-300">
-              <h2 className="text-xl font-semibold text-[#f3f4f6] mb-4">
-                  AI Analysis
-              </h2>
-                <div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-xs text-[#9ca3af] mb-1">Fraud Risk</p>
-                      <p className={`text-sm font-medium ${
-                        (claim as any).ai_analysis.fraud_risk === "High" ? "text-red-400" :
-                        (claim as any).ai_analysis.fraud_risk === "Medium" ? "text-yellow-400" :
-                        "text-green-400"
-                      }`}>
-                        {(claim as any).ai_analysis.fraud_risk} ({(claim as any).ai_analysis.fraud_score * 100}%)
-                      </p>
+              <div className="bg-[#1a1a22] border border-[#2a2a32] rounded-lg p-6 hover:border-[#a855f7]/30 transition-all duration-300">
+                <h2 className="text-xl font-semibold text-[#f3f4f6] mb-4">AI Analysis</h2>
+                {(() => {
+                  const ml = (claim as any).ml_scores || {};
+                  const ai = (claim as any).ai_analysis || {};
+                  const fraudScore = (claim as any).fraud_score ?? ml.fraud_score ?? ai.fraud_score ?? null;
+                  const complexityScore = (claim as any).complexity_score ?? ml.complexity_score ?? ai.complexity_score ?? null;
+                  const fraudLabel = ai.fraud_risk;
+                  const complexityLabel = ai.complexity_assessment;
+                  return (
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-2 gap-4">
+                        {fraudScore !== null && Number.isFinite(fraudScore) && (
+                          <div>
+                            <p className="text-xs text-[#9ca3af] mb-1">Fraud Score</p>
+                            <p className={`text-sm font-medium ${
+                              fraudScore >= 0.6 ? "text-red-400" : fraudScore > 0.3 ? "text-yellow-400" : "text-green-400"
+                            }`}>
+                              {(fraudScore * 100).toFixed(1)}%
+                              {fraudLabel ? <span className="text-[#9ca3af] ml-2">({fraudLabel})</span> : null}
+                            </p>
+                          </div>
+                        )}
+                        {complexityScore !== null && Number.isFinite(complexityScore) && (
+                          <div>
+                            <p className="text-xs text-[#9ca3af] mb-1">Complexity Score</p>
+                            <p className="text-sm font-medium text-[#a855f7]">
+                              {complexityScore.toFixed(1)}
+                              {complexityLabel ? <span className="text-[#9ca3af] ml-2">({complexityLabel})</span> : null}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                      {ai.risk_factors && ai.risk_factors.length > 0 && (
+                        <div className="pt-3 border-t border-[#2a2a32]">
+                          <p className="text-xs text-[#9ca3af] mb-2">Risk Factors</p>
+                          <ul className="list-disc list-inside space-y-1">
+                            {ai.risk_factors.map((factor: string, idx: number) => (
+                              <li key={idx} className="text-sm text-[#f3f4f6]">{factor}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                     </div>
-                    <div>
-                      <p className="text-xs text-[#9ca3af] mb-1">Complexity</p>
-                      <p className={`text-sm font-medium ${
-                        (claim as any).ai_analysis.complexity_assessment === "High" ? "text-red-400" :
-                        (claim as any).ai_analysis.complexity_assessment === "Medium" ? "text-yellow-400" :
-                        "text-green-400"
-                      }`}>
-                        {(claim as any).ai_analysis.complexity_assessment} (Score: {(claim as any).ai_analysis.complexity_score})
-              </p>
-            </div>
-                  </div>
-                  {(claim as any).ai_analysis.risk_factors && (claim as any).ai_analysis.risk_factors.length > 0 && (
-                    <div className="pt-3 border-t border-[#2a2a32]">
-                      <p className="text-xs text-[#9ca3af] mb-2">Risk Factors</p>
-                      <ul className="list-disc list-inside space-y-1">
-                        {(claim as any).ai_analysis.risk_factors.map((factor: string, idx: number) => (
-                          <li key={idx} className="text-sm text-[#f3f4f6]">{factor}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
+                  );
+                })()}
               </div>
             )}
 
@@ -604,7 +612,8 @@ const ClaimDetailPage = () => {
                 {(() => {
                   const mlScores = (claim as any).ml_scores || {};
                   const fraudScore = (claim as any).fraud_score ?? mlScores.fraud_score ?? null;
-                  return fraudScore !== null && (
+                  const show = fraudScore !== null && Number.isFinite(fraudScore);
+                  return show && (
                     <div>
                       <div className="flex justify-between items-center mb-2">
                         <span className="text-sm text-[#9ca3af]">Fraud Score</span>
@@ -634,7 +643,8 @@ const ClaimDetailPage = () => {
                 {(() => {
                   const mlScores = (claim as any).ml_scores || {};
                   const complexityScore = (claim as any).complexity_score ?? mlScores.complexity_score ?? null;
-                  return complexityScore !== null && (
+                  const show = complexityScore !== null && Number.isFinite(complexityScore);
+                  return show && (
                     <div>
                       <div className="flex justify-between items-center mb-2">
                         <span className="text-sm text-[#9ca3af]">Complexity Score</span>
@@ -696,7 +706,8 @@ const ClaimDetailPage = () => {
                   const litigationScore = mlScores.litigation_score ?? null;
                   const litigationFlag = mlScores.litigation_flag ?? false;
                   const litigationReasons = mlScores.litigation_reasons || [];
-                  return litigationScore !== null && (
+                  const show = litigationScore !== null && Number.isFinite(litigationScore);
+                  return show && (
                     <div className="pt-4 border-t border-[#2a2a32]">
                       <div className="flex justify-between items-center mb-2">
                         <div className="flex items-center gap-2">
@@ -748,7 +759,8 @@ const ClaimDetailPage = () => {
                   const subrogationScore = mlScores.subrogation_score ?? null;
                   const subrogationFlag = mlScores.subrogation_flag ?? false;
                   const subrogationReasons = mlScores.subrogation_reasons || [];
-                  return subrogationScore !== null && (
+                  const show = subrogationScore !== null && Number.isFinite(subrogationScore);
+                  return show && (
                     <div className="pt-4 border-t border-[#2a2a32]">
                       <div className="flex justify-between items-center mb-2">
                         <div className="flex items-center gap-2">

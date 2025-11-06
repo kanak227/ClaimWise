@@ -9,10 +9,11 @@ logger = logging.getLogger(__name__)
 
 SYSTEM_PROMPT = (
     "You are ClaimWise's helpful insurance claim assistant. "
-    "Answer questions clearly and concisely. If asked about this claim, "
-    "use the provided claim context only and do not invent details. "
-    "If information is missing, say what is known and what is unknown. "
-    "Be professional and helpful for adjusters and claimants."
+    "Answer clearly and concisely. Ground every assessment in the provided claim context. "
+    "When explaining fraud risk, cite explicit evidence from field comparisons and document analysis—"
+    "for example, mismatched IDs, large damage deltas, inconsistent dates/locations, or missing documents. "
+    "Do not invent details. If something is unknown or not present in context, state it plainly. "
+    "Prefer short bullet points for reasons."
 )
 
 
@@ -41,12 +42,53 @@ def _render_context(ctx: Dict[str, Any]) -> str:
 
     ml = ctx.get("ml_scores") or {}
     if any(v is not None for v in ml.values()):
-        parts.append(
-            "ML Scores: "
-            + ", ".join(
-                f"{k}={v}" for k, v in ml.items() if v is not None
-            )
-        )
+        # Basic scores
+        score_bits = []
+        for k in ["fraud_score", "complexity_score", "severity_level", "litigation_score", "subrogation_score"]:
+            if ml.get(k) is not None:
+                score_bits.append(f"{k}={ml.get(k)}")
+        if score_bits:
+            parts.append("ML Scores: " + ", ".join(score_bits))
+
+        # Evidence extraction from features
+        feats = ml.get("features") or {}
+        evidence: List[str] = []
+
+        try:
+            damage_diff = feats.get("damage_difference")
+            if isinstance(damage_diff, (int, float)) and damage_diff is not None and damage_diff != 0:
+                evidence.append(f"Damage estimate difference across docs: {damage_diff}")
+
+            inj_mismatch = feats.get("injury_mismatch")
+            if isinstance(inj_mismatch, (int, float)) and inj_mismatch > 0:
+                evidence.append("Injury details mismatch between sources")
+
+            date_diff = feats.get("date_difference_days")
+            if isinstance(date_diff, (int, float)) and date_diff and abs(float(date_diff)) > 0:
+                evidence.append(f"Incident date inconsistency: ~{int(abs(float(date_diff)))} days")
+
+            for key, label in [
+                ("location_match", "Location"),
+                ("vehicle_match", "Vehicle"),
+                ("rc_match", "RC"),
+                ("dl_match", "DL"),
+                ("patient_match", "Patient"),
+                ("hospital_match", "Hospital"),
+            ]:
+                val = feats.get(key)
+                if isinstance(val, (int, float)):
+                    if float(val) == 0.0:
+                        evidence.append(f"{label} details do not match across documents")
+
+            inc = feats.get("fraud_inconsistency_score")
+            if isinstance(inc, (int, float)) and inc and inc > 0:
+                evidence.append(f"Inconsistency signal score: {inc}")
+        except Exception:
+            # Do not fail context rendering on malformed features
+            pass
+
+        if evidence:
+            parts.append("Evidence:\n- " + "\n- ".join(evidence[:8]))
     return "\n".join(parts)
 
 
