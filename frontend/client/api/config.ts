@@ -11,6 +11,7 @@ export const API_ENDPOINTS = {
     list: "/api/claims",
     get: (id: string) => `/api/claims/${id}`,
     reassign: (id: string) => `/api/claims/${id}/reassign`,
+    chat: (id: string) => `/api/claims/${id}/chat`,
   },
   queues: {
     list: "/api/queues",

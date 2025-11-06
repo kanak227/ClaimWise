@@ -31,3 +31,6 @@ textblob>=0.17.1
 
 # Additional utilities
 python-dateutil>=2.8.2
+
+# LLM integration (Gemini)
+google-generativeai>=0.8.0

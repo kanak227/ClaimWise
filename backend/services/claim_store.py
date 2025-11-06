@@ -5,6 +5,7 @@ Used to back the Team Panel queues and claim list for the frontend.
 from __future__ import annotations
 
 import json
+import math
 import uuid
 from datetime import datetime
 from pathlib import Path
@@ -17,6 +18,28 @@ CLAIMS_FILE = DATA_DIR / "claims.json"
 
 _lock = threading.RLock()
 _claims: List[Dict[str, Any]] = []
+
+
+def _is_bad_number(v: Any) -> bool:
+    """Return True if value is a non-finite number (nan/inf/-inf)."""
+    return isinstance(v, float) and (math.isnan(v) or math.isinf(v))
+
+
+def _sanitize(value: Any) -> Any:
+    """Recursively sanitize a structure so the frontend never sees NaN/Infinity.
+
+    Rules:
+      - Replace NaN/Infinity with None
+      - Leave ints/bools/strings untouched
+      - Recurse into lists/dicts
+    """
+    if isinstance(value, dict):
+        return {k: _sanitize(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [(_sanitize(v)) for v in value]
+    if _is_bad_number(value):
+        return None
+    return value
 
 
 def _load() -> None:
@@ -84,9 +107,10 @@ def add_claim(record: Dict[str, Any]) -> Dict[str, Any]:
             "fraud_score": record.get("ml_scores", {}).get("fraud_score") if record.get("ml_scores") else None,
             "complexity_score": record.get("ml_scores", {}).get("complexity_score") if record.get("ml_scores") else None,
         }
-        _claims.insert(0, claim)
-        _save()
-        return claim
+    claim = _sanitize(claim)
+    _claims.insert(0, claim)
+    _save()
+    return claim
 
 
 def list_claims(queue: Optional[str] = None, limit: Optional[int] = None, offset: Optional[int] = None) -> List[Dict[str, Any]]:
@@ -108,7 +132,7 @@ def list_claims(queue: Optional[str] = None, limit: Optional[int] = None, offset
         if limit is not None:
             claims = claims[:limit]
         
-        return claims
+    return _sanitize(claims)
 
 
 def get_claim(claim_id: str) -> Optional[Dict[str, Any]]:
@@ -116,7 +140,7 @@ def get_claim(claim_id: str) -> Optional[Dict[str, Any]]:
     with _lock:
         for c in _claims:
             if c.get("id") == claim_id or c.get("claim_number") == claim_id:
-                return dict(c)
+                return _sanitize(dict(c))
     return None
 
 

@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from routers import upload, routing
 from routers import claims as claims_api
 from routers import pathway as pathway_api
+from routers import chat as chat_api
 import logging
 import sys
 
@@ -33,6 +34,7 @@ app.include_router(upload.router)
 app.include_router(routing.router)
 app.include_router(claims_api.router)
 app.include_router(pathway_api.router)
+app.include_router(chat_api.router)
 app.mount("/files", StaticFiles(directory="uploads"), name="files")
 
 @app.get("/")
