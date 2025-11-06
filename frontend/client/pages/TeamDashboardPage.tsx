@@ -4,10 +4,11 @@ import { ArrowLeft, RefreshCw, Filter, CheckCircle2, AlertTriangle, Clock } from
 import { toast } from "sonner";
 import { getClaims } from "@/api/claims";
 
-interface Claim {
-  id: string;
+// Flexible claim type matching backend payload we use in UI
+type Claim = {
+  id?: string;
   claim_number: string;
-  status: string;
+  status?: string;
   fraud_score?: number;
   complexity_score?: number;
   severity_level?: string;
@@ -20,7 +21,7 @@ interface Claim {
     complexity_score?: number;
     severity_level?: string;
   };
-}
+};
 
 const TeamDashboardPage = () => {
   const navigate = useNavigate();
@@ -43,8 +44,8 @@ const TeamDashboardPage = () => {
     try {
       setLoading(true);
       // Fetch claims filtered by team/queue
-      const response = await getClaims({ queue: team === "All Teams" ? undefined : team });
-      setClaims(response);
+  const response = await getClaims({ queue: team === "All Teams" ? undefined : team });
+  setClaims(response as unknown as Claim[]);
     } catch (error: any) {
       toast.error("Failed to fetch claims");
       console.error(error);
@@ -134,13 +135,13 @@ const TeamDashboardPage = () => {
           <div className="bg-[#1a1a22] border border-[#2a2a32] rounded-lg p-4">
             <p className="text-sm text-[#9ca3af] mb-1">Pending Review</p>
             <p className="text-2xl font-bold text-yellow-400">
-              {claims.filter((c) => c.status === "pending").length}
+              {claims.filter((c) => (c.status || "").toLowerCase() === "pending").length}
             </p>
           </div>
           <div className="bg-[#1a1a22] border border-[#2a2a32] rounded-lg p-4">
             <p className="text-sm text-[#9ca3af] mb-1">Processed</p>
             <p className="text-2xl font-bold text-green-400">
-              {claims.filter((c) => c.status === "processed").length}
+              {claims.filter((c) => (c.status || "").toLowerCase() === "processed").length}
             </p>
           </div>
         </div>
@@ -249,11 +250,11 @@ const TeamDashboardPage = () => {
                     </div>
                     <div className="text-right">
                       <p className={`text-sm font-medium mb-1 ${
-                        claim.status === "processed" ? "text-green-400" : 
-                        claim.status === "pending" ? "text-yellow-400" : 
+                        (claim.status || "").toLowerCase() === "processed" ? "text-green-400" : 
+                        (claim.status || "").toLowerCase() === "pending" ? "text-yellow-400" : 
                         "text-gray-400"
                       }`}>
-                        {claim.status || "pending"}
+                        {claim.status || "Pending"}
                       </p>
                       {claimId === (claim.id || claim.claim_number) && (
                         <span className="text-xs text-[#a855f7]">New</span>

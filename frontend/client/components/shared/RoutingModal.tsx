@@ -64,7 +64,7 @@ export const RoutingModal = ({ open, onClose, routingResult, fraudThreshold }: R
               <div className="flex justify-between items-center mb-2">
                 <p className="text-sm text-[#9ca3af]">Fraud Score</p>
                 <p className={`text-lg font-bold ${isHighFraud ? 'text-red-400' : 'text-green-400'}`}>
-                  {(fraudScore * 100).toFixed(1)}%
+                  {Number.isFinite(fraudScore) ? (fraudScore * 100).toFixed(1) : "--"}%
                 </p>
               </div>
               <div className="w-full bg-[#2a2a32] rounded-full h-2 overflow-hidden">
@@ -76,7 +76,7 @@ export const RoutingModal = ({ open, onClose, routingResult, fraudThreshold }: R
                       ? 'bg-gradient-to-r from-yellow-500 to-yellow-600'
                       : 'bg-gradient-to-r from-green-500 to-green-600'
                   }`}
-                  style={{ width: `${Math.min(fraudScore * 100, 100)}%` }}
+                  style={{ width: `${Math.min(Number.isFinite(fraudScore) ? fraudScore * 100 : 0, 100)}%` }}
                 />
               </div>
               <p className="text-xs text-[#6b7280] mt-2">

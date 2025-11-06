@@ -12,6 +12,8 @@ import { uploadClaim } from "@/api/claims";
 import type { AxiosProgressEvent } from "axios";
 import { RoutingModal } from "@/components/shared/RoutingModal";
 import { FileUploadSection } from "@/components/shared/FileUploadSection";
+import CompactUploadBar from "@/components/shared/CompactUploadBar";
+import { autoUploadSample, autoSelectSample, API_BASE_URL } from "@/api/claims";
 
 // Simplified - just a list of files, no preview needed
 
@@ -297,6 +299,64 @@ const UploadPage = () => {
     toast.info("Form reset");
   }, []);
 
+  const handleAutoSample = useCallback(async () => {
+    try {
+      if (!form.claim_type) {
+        toast.error("Please select a claim type first");
+        return;
+      }
+      setLoading(true);
+      // 1) Ask backend to select a matching sample set only
+      const sel = await autoSelectSample(form.claim_type as any);
+      const urls = sel.files || {};
+      // 2) Fetch each file and convert to File objects
+      const fetchAsFile = async (label: string, url: string) => {
+        const res = await fetch(`${API_BASE_URL}${url}`);
+        if (!res.ok) throw new Error(`Failed to fetch sample ${label}`);
+        const blob = await res.blob();
+        const filename = `${label.toUpperCase()}.pdf`;
+        return new File([blob], filename, { type: blob.type || "application/pdf" });
+      };
+      if (form.claim_type === "medical") {
+        const [acordF, lossF, hospF] = await Promise.all([
+          fetchAsFile("acord", urls.acord),
+          fetchAsFile("loss", urls.loss),
+          fetchAsFile("hospital", urls.hospital),
+        ]);
+        setFiles({
+          acord: [acordF],
+          loss: [lossF],
+          hospital: [hospF],
+          fir: [],
+          rc: [],
+          dl: [],
+        });
+      } else {
+        const [acordF, lossF, firF, rcF, dlF] = await Promise.all([
+          fetchAsFile("acord", urls.acord),
+          fetchAsFile("loss", urls.loss),
+          fetchAsFile("fir", urls.fir),
+          fetchAsFile("rc", urls.rc),
+          fetchAsFile("dl", urls.dl),
+        ]);
+        setFiles({
+          acord: [acordF],
+          loss: [lossF],
+          hospital: [],
+          fir: [firF],
+          rc: [rcF],
+          dl: [dlF],
+        });
+      }
+      // Don't submit automatically; just show as attached
+      toast.success("Sample documents attached. Review and submit when ready.");
+    } catch (e: any) {
+      toast.error(e.message || "Failed to attach sample documents");
+    } finally {
+      setLoading(false);
+    }
+  }, [form.claim_type, toast, setFiles]);
+
   // Handle routing modal close with redirect
   const handleRoutingModalClose = useCallback(() => {
     setShowRoutingModal(false);
@@ -387,18 +447,23 @@ const UploadPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0b0b0f] to-[#121216]">
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-[#f3f4f6] mb-2">
-            File Your Claim
-          </h1>
-          <p className="text-[#9ca3af]">
-            Complete the form below to submit your insurance claim
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-[#0b0b0f] to-[#121216] overflow-x-hidden">
+      {/* Page header */}
+      <div className="border-b border-[#2a2a32] bg-[#0d0f14]/80 backdrop-blur supports-[backdrop-filter]:bg-[#0d0f14]/60">
+        <div className="max-w-7xl mx-auto px-6 py-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-[#f3f4f6]">File Your Claim</h1>
+              <p className="text-[#9ca3af] mt-1">Provide your details and upload the required documents</p>
+            </div>
+          </div>
         </div>
+      </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
+          {/* Left: main form */}
+          <form onSubmit={handleSubmit} className="xl:col-span-2 space-y-6">
           {/* Simple Form Section */}
           <div className="bg-[#1a1a22] border border-[#2a2a32] rounded-lg p-6 hover:border-[#a855f7]/30 transition-all duration-300">
             <h2 className="text-xl font-semibold text-[#f3f4f6] mb-6">
@@ -452,121 +517,20 @@ const UploadPage = () => {
             </div>
           </div>
 
-          {/* File Upload Sections - Conditional based on claim type */}
-          {form.claim_type === "medical" && (
-            <>
-              {/* Medical: ACORD */}
-              <FileUploadSection
-                section="acord"
-                title="ACORD Form"
-                required
-                files={files.acord}
-                onAdd={(fileList) => handleFileAdd("acord", fileList)}
-                onRemove={(index) => handleFileRemove("acord", index)}
-                onDragOver={handleDragOver}
-                onDrop={(e) => handleDrop(e, "acord")}
-                inputRef={(el) => { fileInputRefs.current.acord = el; }}
-              />
-              
-              {/* Medical: Loss */}
-              <FileUploadSection
-                section="loss"
-                title="Loss Report"
-                required
-                files={files.loss}
-                onAdd={(fileList) => handleFileAdd("loss", fileList)}
-                onRemove={(index) => handleFileRemove("loss", index)}
-                onDragOver={handleDragOver}
-                onDrop={(e) => handleDrop(e, "loss")}
-                inputRef={(el) => { fileInputRefs.current.loss = el; }}
-              />
-              
-              {/* Medical: Hospital Bill */}
-              <FileUploadSection
-                section="hospital"
-                title="Hospital Bill"
-                required
-                files={files.hospital}
-                onAdd={(fileList) => handleFileAdd("hospital", fileList)}
-                onRemove={(index) => handleFileRemove("hospital", index)}
-                onDragOver={handleDragOver}
-                onDrop={(e) => handleDrop(e, "hospital")}
-                inputRef={(el) => { fileInputRefs.current.hospital = el; }}
-              />
-            </>
-          )}
-
-          {form.claim_type === "accident" && (
-            <>
-              {/* Accident: ACORD */}
-              <FileUploadSection
-                section="acord"
-                title="ACORD Form"
-                required
-                files={files.acord}
-                onAdd={(fileList) => handleFileAdd("acord", fileList)}
-                onRemove={(index) => handleFileRemove("acord", index)}
-                onDragOver={handleDragOver}
-                onDrop={(e) => handleDrop(e, "acord")}
-                inputRef={(el) => { fileInputRefs.current.acord = el; }}
-              />
-              
-              {/* Accident: Loss */}
-              <FileUploadSection
-                section="loss"
-                title="Loss Report"
-                required
-                files={files.loss}
-                onAdd={(fileList) => handleFileAdd("loss", fileList)}
-                onRemove={(index) => handleFileRemove("loss", index)}
-                onDragOver={handleDragOver}
-                onDrop={(e) => handleDrop(e, "loss")}
-                inputRef={(el) => { fileInputRefs.current.loss = el; }}
-              />
-              
-              {/* Accident: FIR */}
-              <FileUploadSection
-                section="fir"
-                title="FIR (Police Report)"
-                required
-                files={files.fir}
-                onAdd={(fileList) => handleFileAdd("fir", fileList)}
-                onRemove={(index) => handleFileRemove("fir", index)}
-                onDragOver={handleDragOver}
-                onDrop={(e) => handleDrop(e, "fir")}
-                inputRef={(el) => { fileInputRefs.current.fir = el; }}
-              />
-              
-              {/* Accident: RC */}
-              <FileUploadSection
-                section="rc"
-                title="RC (Registration Certificate)"
-                required
-                files={files.rc}
-                onAdd={(fileList) => handleFileAdd("rc", fileList)}
-                onRemove={(index) => handleFileRemove("rc", index)}
-                onDragOver={handleDragOver}
-                onDrop={(e) => handleDrop(e, "rc")}
-                inputRef={(el) => { fileInputRefs.current.rc = el; }}
-              />
-              
-              {/* Accident: DL */}
-              <FileUploadSection
-                section="dl"
-                title="DL (Driving License)"
-                required
-                files={files.dl}
-                onAdd={(fileList) => handleFileAdd("dl", fileList)}
-                onRemove={(index) => handleFileRemove("dl", index)}
-                onDragOver={handleDragOver}
-                onDrop={(e) => handleDrop(e, "dl")}
-                inputRef={(el) => { fileInputRefs.current.dl = el; }}
-              />
-            </>
-          )}
+          {/* Compact Horizontal Upload Bar */}
+          <CompactUploadBar
+            claimType={form.claim_type as any}
+            files={files as any}
+            onAdd={(section, fileList) => handleFileAdd(section as any, fileList)}
+            onRemove={(section, index) => handleFileRemove(section as any, index)}
+            onDragOver={handleDragOver}
+            onDrop={(e, section) => handleDrop(e, section as any)}
+            inputRefs={fileInputRefs.current as any}
+            setInputRef={(section, el) => { (fileInputRefs.current as any)[section] = el; }}
+          />
 
           {/* Submit Buttons */}
-          <div className="flex gap-4 pt-6">
+          <div className="flex flex-wrap gap-4 pt-6">
             <button
               type="button"
               onClick={() => navigate("/")}
@@ -582,6 +546,14 @@ const UploadPage = () => {
               Reset
             </button>
             <button
+              type="button"
+              onClick={handleAutoSample}
+              disabled={loading}
+              className="flex-1 px-6 py-3 border border-[#2a2a32] text-[#a855f7] rounded-lg hover:border-[#a855f7] hover:bg-[#a855f7]/10 transition-all duration-300 font-medium disabled:opacity-50"
+            >
+              Auto Sample Upload
+            </button>
+            <button
               type="submit"
               disabled={loading}
               className="flex-1 px-6 py-3 bg-gradient-to-r from-[#a855f7] to-[#ec4899] text-white rounded-lg hover:from-[#9333ea] hover:to-[#db2777] transition-all duration-300 ease-in-out font-medium shadow-lg shadow-[#a855f7]/20 hover:shadow-[#a855f7]/40 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -589,7 +561,30 @@ const UploadPage = () => {
               Submit Claim
             </button>
           </div>
-        </form>
+          </form>
+
+          {/* Right: helpful sidebar */}
+          <aside className="space-y-6">
+            <div className="bg-[#1a1a22] border border-[#2a2a32] rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-[#f3f4f6] mb-3">Submission Guidelines</h3>
+              <ul className="space-y-2 text-sm text-[#9ca3af] list-disc list-inside">
+                <li>All documents must be PDF format (max 20MB each).</li>
+                <li>Ensure claim type matches the uploaded document set.</li>
+                <li>Use clear scanned copies with legible text.</li>
+                <li>Double-check names, dates, and IDs for consistency.</li>
+              </ul>
+            </div>
+            <div className="bg-[#1a1a22] border border-[#2a2a32] rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-[#f3f4f6] mb-3">Required Documents</h3>
+              <div className="text-sm text-[#9ca3af]">
+                <p className="font-medium text-[#f3f4f6] mb-1">Medical</p>
+                <p className="mb-3">ACORD, Loss, Hospital Bill</p>
+                <p className="font-medium text-[#f3f4f6] mb-1">Accident</p>
+                <p>ACORD, Loss, FIR, RC, DL</p>
+              </div>
+            </div>
+          </aside>
+        </div>
       </div>
 
       {/* Routing Modal */}

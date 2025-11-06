@@ -1,0 +1,268 @@
+INFO:     Will watch for changes in these directories: ['/home/harshgupta/Desktop/claims/ClaimWise/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [25660] using WatchFiles
+Pathway not installed. Install with: pip install pathway
+Pathway not available. Using fallback routing.
+INFO:     Started server process [25663]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:60884 - "GET /upload/auto/select?claim_type=medical HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60884 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/accord_form_100/CLM-2025-0068-HEA_SAFE_acord.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60900 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/loss_reports_100/CLM-2025-0068-HEA_SAFE_loss.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60906 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/hospital_bills_100/CLM-2025-0068-HEA_SAFE_hospital.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60884 - "GET /upload/auto/select?claim_type=medical HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60900 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/accord_form_100/CLM-2025-0070-HEA_SAFE_acord.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60884 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/hospital_bills_100/CLM-2025-0070-HEA_SAFE_hospital.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60906 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/loss_reports_100/CLM-2025-0070-HEA_SAFE_loss.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41866 - "GET /upload/auto/select?claim_type=medical HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41866 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/accord_form_100/CLM-2025-0048-HEA_SAFE_acord.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41878 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/loss_reports_100/CLM-2025-0048-HEA_SAFE_loss.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41884 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/hospital_bills_100/CLM-2025-0048-HEA_SAFE_hospital.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41866 - "GET /upload/auto/select?claim_type=medical HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41878 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/accord_form_100/CLM-2025-0095-HEA_RISK_acord.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41884 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/loss_reports_100/CLM-2025-0095-HEA_RISK_loss.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41866 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/hospital_bills_100/CLM-2025-0095-HEA_RISK_hospital.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55326 - "GET /upload/auto/select?claim_type=medical HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55326 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/accord_form_100/CLM-2025-0081-HEA_RISK_acord.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55336 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/loss_reports_100/CLM-2025-0081-HEA_RISK_loss.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55342 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/hospital_bills_100/CLM-2025-0081-HEA_RISK_hospital.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55326 - "GET /upload/auto/select?claim_type=medical HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55336 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/accord_form_100/CLM-2025-0016-HEA_SAFE_acord.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55342 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/loss_reports_100/CLM-2025-0016-HEA_SAFE_loss.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55326 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/hospital_bills_100/CLM-2025-0016-HEA_SAFE_hospital.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55336 - "OPTIONS /upload HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55326 - "POST /upload HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:55336 - "OPTIONS /upload/ HTTP/1.1" 200 OK
+2025-11-06 22:34:39,092 - routers.upload - INFO - Processing medical claim: CLM-1762448679060
+2025-11-06 22:34:39,093 - routers.upload - INFO - Analyzing acord document...
+2025-11-06 22:34:39,158 - routers.upload - INFO - Analysis complete for acord
+2025-11-06 22:34:39,158 - routers.upload - INFO - Analyzing loss document...
+2025-11-06 22:34:39,163 - routers.upload - INFO - Analysis complete for loss
+2025-11-06 22:34:39,163 - routers.upload - INFO - Analyzing hospital document...
+2025-11-06 22:34:39,167 - routers.upload - INFO - Analysis complete for hospital
+2025-11-06 22:34:39,167 - routers.upload - INFO - Running ML scoring...
+/home/harshgupta/.local/lib/python3.13/site-packages/sklearn/base.py:442: InconsistentVersionWarning: Trying to unpickle estimator DecisionTreeClassifier from version 1.7.1 when using version 1.7.2. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:
+https://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations
+  warnings.warn(
+/home/harshgupta/.local/lib/python3.13/site-packages/sklearn/base.py:442: InconsistentVersionWarning: Trying to unpickle estimator RandomForestClassifier from version 1.7.1 when using version 1.7.2. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:
+https://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations
+  warnings.warn(
+2025-11-06 22:34:39,863 - services.ml_service - INFO - Loaded fraud_model from /home/harshgupta/Desktop/claims/ClaimWise/ml/fraud_detection_system/models/fraud_model.pkl
+2025-11-06 22:34:39,923 - services.ml_service - INFO - Loaded severity_model from /home/harshgupta/Desktop/claims/ClaimWise/ml/fraud_detection_system/models/severity_model.pkl
+/home/harshgupta/.local/lib/python3.13/site-packages/sklearn/base.py:442: InconsistentVersionWarning: Trying to unpickle estimator DecisionTreeRegressor from version 1.7.1 when using version 1.7.2. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:
+https://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations
+  warnings.warn(
+/home/harshgupta/.local/lib/python3.13/site-packages/sklearn/base.py:442: InconsistentVersionWarning: Trying to unpickle estimator RandomForestRegressor from version 1.7.1 when using version 1.7.2. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:
+https://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations
+  warnings.warn(
+2025-11-06 22:34:39,973 - services.ml_service - INFO - Loaded complexity_model from /home/harshgupta/Desktop/claims/ClaimWise/ml/fraud_detection_system/models/complexity_model.pkl
+2025-11-06 22:34:39,999 - routers.upload - INFO - ML scores: fraud=0.03, complexity=2.0
+2025-11-06 22:34:39,999 - routers.upload - INFO - Applying routing rules...
+2025-11-06 22:34:39,999 - services.pathway_pipeline - WARNING - Pathway not available. Using fallback routing.
+2025-11-06 22:34:40,000 - routers.upload - INFO - Claim CLM-1762448679060 processed successfully. Team: Health Dept - High
+INFO:     127.0.0.1:55326 - "POST /upload/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50196 - "GET /upload/auto/select?claim_type=medical HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50196 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/accord_form_100/CLM-2025-0079-HEA_SAFE_acord.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50202 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/loss_reports_100/CLM-2025-0079-HEA_SAFE_loss.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50210 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/hospital_bills_100/CLM-2025-0079-HEA_SAFE_hospital.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50196 - "GET /upload/auto/select?claim_type=medical HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50196 - "GET /upload/auto/select?claim_type=medical HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50196 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/accord_form_100/CLM-2025-0061-HEA_SAFE_acord.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50226 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/loss_reports_100/CLM-2025-0061-HEA_SAFE_loss.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50234 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/hospital_bills_100/CLM-2025-0061-HEA_SAFE_hospital.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50196 - "GET /upload/auto/select?claim_type=medical HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50226 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/accord_form_100/CLM-2025-0019-HEA_SAFE_acord.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50234 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/loss_reports_100/CLM-2025-0019-HEA_SAFE_loss.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50196 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/hospital_bills_100/CLM-2025-0019-HEA_SAFE_hospital.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50196 - "GET /upload/auto/select?claim_type=medical HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50226 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/accord_form_100/CLM-2025-0062-HEA_SAFE_acord.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50234 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/loss_reports_100/CLM-2025-0062-HEA_SAFE_loss.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50196 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/hospital_bills_100/CLM-2025-0062-HEA_SAFE_hospital.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50226 - "GET /upload/auto/select?claim_type=medical HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50226 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/accord_form_100/CLM-2025-0097-HEA_RISK_acord.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50234 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/loss_reports_100/CLM-2025-0097-HEA_RISK_loss.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50196 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/hospital_bills_100/CLM-2025-0097-HEA_RISK_hospital.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50226 - "GET /upload/auto/select?claim_type=medical HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50226 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/accord_form_100/CLM-2025-0011-HEA_SAFE_acord.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50234 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/loss_reports_100/CLM-2025-0011-HEA_SAFE_loss.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50196 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/hospital_bills_100/CLM-2025-0011-HEA_SAFE_hospital.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50226 - "GET /upload/auto/select?claim_type=medical HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50226 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/accord_form_100/CLM-2025-0030-HEA_SAFE_acord.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50196 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/hospital_bills_100/CLM-2025-0030-HEA_SAFE_hospital.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50234 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/loss_reports_100/CLM-2025-0030-HEA_SAFE_loss.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50226 - "POST /upload HTTP/1.1" 307 Temporary Redirect
+2025-11-06 22:35:13,920 - routers.upload - INFO - Processing medical claim: CLM-1762448713891
+2025-11-06 22:35:13,920 - routers.upload - INFO - Analyzing acord document...
+2025-11-06 22:35:13,929 - routers.upload - INFO - Analysis complete for acord
+2025-11-06 22:35:13,929 - routers.upload - INFO - Analyzing loss document...
+2025-11-06 22:35:13,934 - routers.upload - INFO - Analysis complete for loss
+2025-11-06 22:35:13,935 - routers.upload - INFO - Analyzing hospital document...
+2025-11-06 22:35:13,939 - routers.upload - INFO - Analysis complete for hospital
+2025-11-06 22:35:13,939 - routers.upload - INFO - Running ML scoring...
+/home/harshgupta/.local/lib/python3.13/site-packages/sklearn/base.py:442: InconsistentVersionWarning: Trying to unpickle estimator DecisionTreeClassifier from version 1.7.1 when using version 1.7.2. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:
+https://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations
+  warnings.warn(
+/home/harshgupta/.local/lib/python3.13/site-packages/sklearn/base.py:442: InconsistentVersionWarning: Trying to unpickle estimator RandomForestClassifier from version 1.7.1 when using version 1.7.2. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:
+https://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations
+  warnings.warn(
+2025-11-06 22:35:14,018 - services.ml_service - INFO - Loaded fraud_model from /home/harshgupta/Desktop/claims/ClaimWise/ml/fraud_detection_system/models/fraud_model.pkl
+2025-11-06 22:35:14,074 - services.ml_service - INFO - Loaded severity_model from /home/harshgupta/Desktop/claims/ClaimWise/ml/fraud_detection_system/models/severity_model.pkl
+/home/harshgupta/.local/lib/python3.13/site-packages/sklearn/base.py:442: InconsistentVersionWarning: Trying to unpickle estimator DecisionTreeRegressor from version 1.7.1 when using version 1.7.2. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:
+https://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations
+  warnings.warn(
+/home/harshgupta/.local/lib/python3.13/site-packages/sklearn/base.py:442: InconsistentVersionWarning: Trying to unpickle estimator RandomForestRegressor from version 1.7.1 when using version 1.7.2. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:
+https://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations
+  warnings.warn(
+2025-11-06 22:35:14,127 - services.ml_service - INFO - Loaded complexity_model from /home/harshgupta/Desktop/claims/ClaimWise/ml/fraud_detection_system/models/complexity_model.pkl
+2025-11-06 22:35:14,156 - routers.upload - INFO - ML scores: fraud=0.0, complexity=2.0
+2025-11-06 22:35:14,156 - routers.upload - INFO - Applying routing rules...
+2025-11-06 22:35:14,156 - services.pathway_pipeline - WARNING - Pathway not available. Using fallback routing.
+2025-11-06 22:35:14,157 - routers.upload - INFO - Claim CLM-1762448713891 processed successfully. Team: Health Dept - Mid
+INFO:     127.0.0.1:50226 - "POST /upload/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47638 - "GET /upload/auto/select?claim_type=medical HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47638 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/accord_form_100/CLM-2025-0072-HEA_SAFE_acord.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47652 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/loss_reports_100/CLM-2025-0072-HEA_SAFE_loss.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47666 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/hospital_bills_100/CLM-2025-0072-HEA_SAFE_hospital.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43382 - "GET /upload/auto/select?claim_type=medical HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43382 - "GET /upload/auto/select?claim_type=medical HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43382 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/accord_form_100/CLM-2025-0009-HEA_SAFE_acord.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43396 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/loss_reports_100/CLM-2025-0009-HEA_SAFE_loss.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/hospital_bills_100/CLM-2025-0009-HEA_SAFE_hospital.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43382 - "GET /upload/auto/select?claim_type=medical HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43382 - "GET /upload/auto/select?claim_type=medical HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43396 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/accord_form_100/CLM-2025-0017-HEA_SAFE_acord.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/loss_reports_100/CLM-2025-0017-HEA_SAFE_loss.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43382 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/hospital_bills_100/CLM-2025-0017-HEA_SAFE_hospital.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43396 - "GET /upload/auto/select?claim_type=medical HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43396 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/accord_form_100/CLM-2025-0090-HEA_RISK_acord.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/loss_reports_100/CLM-2025-0090-HEA_RISK_loss.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43382 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/hospital_bills_100/CLM-2025-0090-HEA_RISK_hospital.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43396 - "GET /upload/auto/select?claim_type=medical HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43396 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/accord_form_100/CLM-2025-0043-HEA_SAFE_acord.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/loss_reports_100/CLM-2025-0043-HEA_SAFE_loss.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43382 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/hospital_bills_100/CLM-2025-0043-HEA_SAFE_hospital.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43396 - "GET /upload/auto/select?claim_type=medical HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43396 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/accord_form_100/CLM-2025-0012-HEA_SAFE_acord.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43382 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/hospital_bills_100/CLM-2025-0012-HEA_SAFE_hospital.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/loss_reports_100/CLM-2025-0012-HEA_SAFE_loss.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43396 - "GET /upload/auto/select?claim_type=medical HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43396 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/accord_form_100/CLM-2025-0069-HEA_SAFE_acord.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43382 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/hospital_bills_100/CLM-2025-0069-HEA_SAFE_hospital.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43406 - "GET /upload/auto/file?path=/home/harshgupta/Desktop/claims/ClaimWise/ml/dataset/health/loss_reports_100/CLM-2025-0069-HEA_SAFE_loss.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43396 - "POST /upload HTTP/1.1" 307 Temporary Redirect
+2025-11-06 22:35:50,697 - routers.upload - INFO - Processing medical claim: CLM-1762448750671
+2025-11-06 22:35:50,698 - routers.upload - INFO - Analyzing acord document...
+2025-11-06 22:35:50,710 - routers.upload - INFO - Analysis complete for acord
+2025-11-06 22:35:50,711 - routers.upload - INFO - Analyzing loss document...
+2025-11-06 22:35:50,719 - routers.upload - INFO - Analysis complete for loss
+2025-11-06 22:35:50,720 - routers.upload - INFO - Analyzing hospital document...
+2025-11-06 22:35:50,725 - routers.upload - INFO - Analysis complete for hospital
+2025-11-06 22:35:50,725 - routers.upload - INFO - Running ML scoring...
+/home/harshgupta/.local/lib/python3.13/site-packages/sklearn/base.py:442: InconsistentVersionWarning: Trying to unpickle estimator DecisionTreeClassifier from version 1.7.1 when using version 1.7.2. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:
+https://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations
+  warnings.warn(
+/home/harshgupta/.local/lib/python3.13/site-packages/sklearn/base.py:442: InconsistentVersionWarning: Trying to unpickle estimator RandomForestClassifier from version 1.7.1 when using version 1.7.2. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:
+https://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations
+  warnings.warn(
+2025-11-06 22:35:50,800 - services.ml_service - INFO - Loaded fraud_model from /home/harshgupta/Desktop/claims/ClaimWise/ml/fraud_detection_system/models/fraud_model.pkl
+2025-11-06 22:35:50,850 - services.ml_service - INFO - Loaded severity_model from /home/harshgupta/Desktop/claims/ClaimWise/ml/fraud_detection_system/models/severity_model.pkl
+/home/harshgupta/.local/lib/python3.13/site-packages/sklearn/base.py:442: InconsistentVersionWarning: Trying to unpickle estimator DecisionTreeRegressor from version 1.7.1 when using version 1.7.2. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:
+https://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations
+  warnings.warn(
+/home/harshgupta/.local/lib/python3.13/site-packages/sklearn/base.py:442: InconsistentVersionWarning: Trying to unpickle estimator RandomForestRegressor from version 1.7.1 when using version 1.7.2. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:
+https://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations
+  warnings.warn(
+2025-11-06 22:35:50,910 - services.ml_service - INFO - Loaded complexity_model from /home/harshgupta/Desktop/claims/ClaimWise/ml/fraud_detection_system/models/complexity_model.pkl
+2025-11-06 22:35:50,938 - routers.upload - INFO - ML scores: fraud=0.0, complexity=2.0
+2025-11-06 22:35:50,939 - routers.upload - INFO - Applying routing rules...
+2025-11-06 22:35:50,939 - services.pathway_pipeline - WARNING - Pathway not available. Using fallback routing.
+2025-11-06 22:35:50,939 - routers.upload - INFO - Claim CLM-1762448750671 processed successfully. Team: Health Dept - Mid
+INFO:     127.0.0.1:43396 - "POST /upload/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58978 - "POST /upload HTTP/1.1" 307 Temporary Redirect
+2025-11-06 22:36:39,029 - routers.upload - INFO - Processing medical claim: CLM-1762448799001
+2025-11-06 22:36:39,029 - routers.upload - INFO - Analyzing acord document...
+2025-11-06 22:36:39,043 - routers.upload - INFO - Analysis complete for acord
+2025-11-06 22:36:39,043 - routers.upload - INFO - Analyzing loss document...
+2025-11-06 22:36:39,052 - routers.upload - INFO - Analysis complete for loss
+2025-11-06 22:36:39,052 - routers.upload - INFO - Analyzing hospital document...
+2025-11-06 22:36:39,057 - routers.upload - INFO - Analysis complete for hospital
+2025-11-06 22:36:39,057 - routers.upload - INFO - Running ML scoring...
+/home/harshgupta/.local/lib/python3.13/site-packages/sklearn/base.py:442: InconsistentVersionWarning: Trying to unpickle estimator DecisionTreeClassifier from version 1.7.1 when using version 1.7.2. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:
+https://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations
+  warnings.warn(
+/home/harshgupta/.local/lib/python3.13/site-packages/sklearn/base.py:442: InconsistentVersionWarning: Trying to unpickle estimator RandomForestClassifier from version 1.7.1 when using version 1.7.2. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:
+https://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations
+  warnings.warn(
+2025-11-06 22:36:39,135 - services.ml_service - INFO - Loaded fraud_model from /home/harshgupta/Desktop/claims/ClaimWise/ml/fraud_detection_system/models/fraud_model.pkl
+2025-11-06 22:36:39,191 - services.ml_service - INFO - Loaded severity_model from /home/harshgupta/Desktop/claims/ClaimWise/ml/fraud_detection_system/models/severity_model.pkl
+/home/harshgupta/.local/lib/python3.13/site-packages/sklearn/base.py:442: InconsistentVersionWarning: Trying to unpickle estimator DecisionTreeRegressor from version 1.7.1 when using version 1.7.2. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:
+https://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations
+  warnings.warn(
+/home/harshgupta/.local/lib/python3.13/site-packages/sklearn/base.py:442: InconsistentVersionWarning: Trying to unpickle estimator RandomForestRegressor from version 1.7.1 when using version 1.7.2. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:
+https://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations
+  warnings.warn(
+2025-11-06 22:36:39,250 - services.ml_service - INFO - Loaded complexity_model from /home/harshgupta/Desktop/claims/ClaimWise/ml/fraud_detection_system/models/complexity_model.pkl
+2025-11-06 22:36:39,283 - routers.upload - INFO - ML scores: fraud=0.137, complexity=4.0
+2025-11-06 22:36:39,283 - routers.upload - INFO - Applying routing rules...
+2025-11-06 22:36:39,283 - services.pathway_pipeline - WARNING - Pathway not available. Using fallback routing.
+2025-11-06 22:36:39,284 - routers.upload - INFO - Claim CLM-1762448799001 processed successfully. Team: Health Dept - High
+INFO:     127.0.0.1:58978 - "POST /upload/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40852 - "GET /api/claims?limit=25 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40864 - "GET /api/queues HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40852 - "GET /api/claims?limit=25 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40864 - "GET /api/queues HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56562 - "GET /api/claims/CLM-1762448799001 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56562 - "GET /api/claims/CLM-1762448799001 HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'routers/chat.py', 'main.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [25663]
+WARNING:  WatchFiles detected changes in 'services/gemini_chat.py'. Reloading...
+Pathway not installed. Install with: pip install pathway
+Pathway not available. Using fallback routing.
+INFO:     Started server process [26168]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'routers/upload.py', 'services/claim_store.py'. Reloading...
+Pathway not installed. Install with: pip install pathway
+Pathway not available. Using fallback routing.
+INFO:     Started server process [26179]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+Pathway not installed. Install with: pip install pathway
+Pathway not available. Using fallback routing.
+INFO:     Started server process [26186]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:33466 - "GET /api/claims/CLM-1762448799001 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33468 - "GET /api/claims/CLM-1762444618623 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46010 - "GET /api/claims/CLM-1762448799001 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46014 - "GET /api/claims?limit=25 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46026 - "GET /api/queues HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46014 - "GET /api/claims/CLM-1762448799001 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46030 - "GET /api/claims?limit=25 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46026 - "GET /api/claims/CLM-1762448799001 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46032 - "GET /api/queues HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46014 - "GET /api/claims?limit=25 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46030 - "GET /api/queues HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46034 - "GET /api/claims?limit=25 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46032 - "GET /api/claims?limit=25 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46026 - "GET /api/queues HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46040 - "GET /api/queues HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46030 - "GET /api/claims/CLM-1762442220760 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46014 - "GET /api/claims/CLM-1762442220760 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46034 - "GET /api/claims?limit=25 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46032 - "GET /api/queues HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46040 - "GET /api/claims/CLM-1762444618623 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46026 - "GET /api/claims/CLM-1762444618623 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46014 - "GET /api/claims?limit=25 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46030 - "GET /api/queues HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46034 - "GET /api/claims?limit=25 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46026 - "GET /api/queues HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46032 - "GET /api/claims/CLM-1762442220760 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46040 - "GET /api/claims/CLM-1762442220760 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46030 - "GET /api/claims?limit=25 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46014 - "GET /api/queues HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46034 - "GET /api/claims?limit=25 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46032 - "GET /api/queues HTTP/1.1" 200 OK
