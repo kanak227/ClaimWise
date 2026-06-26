@@ -1,7 +1,10 @@
 import os
 import re
-from fastapi import UploadFile
 import shutil
+from fastapi import UploadFile
+
+from .db import get_db_session
+from .models import DBFile
 
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -20,6 +23,8 @@ async def save_uploaded_file(file: UploadFile, claim_number: str):
 
     The original file extension is preserved. If a file with the same
     name already exists, a numeric suffix is appended (e.g., CLM123-1.pdf).
+    Saves to the local filesystem for immediate OCR processing and also
+    saves it permanently in the database (table: files).
     Returns the absolute file_path and the public URL.
     """
 
@@ -51,8 +56,29 @@ async def save_uploaded_file(file: UploadFile, claim_number: str):
                 file_path = candidate_path
                 break
             counter += 1
+        counter += 1
 
+    # Save to local filesystem for immediate OCR processing
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
+
+    # Read the file content and save to the database
+    file.file.seek(0)
+    file_content = file.file.read()
+
+    session = get_db_session()
+    try:
+        db_file = DBFile(
+            filename=filename,
+            content=file_content,
+            mime_type=file.content_type or "application/pdf"
+        )
+        session.merge(db_file)
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        raise e
+    finally:
+        session.close()
 
     return file_path, f"/files/{filename}"

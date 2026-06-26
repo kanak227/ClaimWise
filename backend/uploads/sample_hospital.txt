@@ -1,8 +1,0 @@
-
-Claim ID: CLM-2025-0001-HEA
-Patient ID: PID-708406
-Hospital Code: HOSP-9051
-Prescription: Ibuprofen 400mg, after meals
-Admission Date: 2025-07-28
-Discharge Date: 2025-07-29
-Bill Amount: 44508

@@ -1,23 +1,16 @@
 """
-Simple claim store with JSON persistence.
+Claim store backed by database persistence.
 Used to back the Team Panel queues and claim list for the frontend.
 """
 from __future__ import annotations
 
-import json
 import math
 import uuid
 from datetime import datetime
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
-import threading
-
-DATA_DIR = Path(__file__).parent.parent / "data"
-CLAIMS_FILE = DATA_DIR / "claims.json"
-
-_lock = threading.RLock()
-_claims: List[Dict[str, Any]] = []
+from .db import get_db_session
+from .models import DBClaim
 
 
 def _is_bad_number(v: Any) -> bool:
@@ -42,138 +35,152 @@ def _sanitize(value: Any) -> Any:
     return value
 
 
-def _load() -> None:
-    global _claims
-    with _lock:
-        if CLAIMS_FILE.exists():
-            try:
-                _claims = json.loads(CLAIMS_FILE.read_text(encoding="utf-8"))
-            except Exception:
-                _claims = []
-        else:
-            _claims = []
-
-
-def _save() -> None:
-    with _lock:
-        DATA_DIR.mkdir(parents=True, exist_ok=True)
-        CLAIMS_FILE.write_text(json.dumps(_claims, indent=2, ensure_ascii=False), encoding="utf-8")
-
-
 def _now_iso() -> str:
     return datetime.utcnow().isoformat() + "Z"
 
 
 def add_claim(record: Dict[str, Any]) -> Dict[str, Any]:
-    """Insert a claim record and persist to disk.
+    """Insert or update a claim record in the database."""
+    claim_number = record.get("claim_number", "")
+    claim_id = record.get("id") or claim_number or str(uuid.uuid4())
+    
+    db_claim = DBClaim(
+        id=claim_id,
+        claim_number=claim_number,
+        claimant=record.get("claimant") or record.get("name") or "Unknown",
+        policy_no=record.get("policy_no") or claim_number or "",
+        loss_type=record.get("loss_type") or record.get("claim_type", "accident"),
+        claim_type=record.get("claim_type", record.get("loss_type", "accident")),
+        created_at=record.get("created_at") or _now_iso(),
+        severity=record.get("severity") or record.get("severity_level") or "Low",
+        severity_level=record.get("severity_level") or record.get("severity") or "Low",
+        confidence=float(record.get("confidence", 0.9)),
+        queue=record.get("queue") or record.get("routing_team") or record.get("final_team") or "Fast Track",
+        routing_team=record.get("routing_team") or record.get("final_team") or record.get("queue") or "Fast Track",
+        final_team=record.get("final_team") or record.get("routing_team") or record.get("queue") or "Fast Track",
+        status=record.get("status") or "Processing",
+        email=record.get("email"),
+        description=record.get("description") or "",
+        rationale=record.get("rationale") or "",
+        assignee=record.get("assignee") or record.get("final_adjuster"),
+        adjuster=record.get("adjuster") or record.get("final_adjuster") or record.get("assignee"),
+        fraud_score=record.get("ml_scores", {}).get("fraud_score") if record.get("ml_scores") else None,
+        complexity_score=record.get("ml_scores", {}).get("complexity_score") if record.get("ml_scores") else None,
+    )
+    
+    db_claim.evidence = record.get("evidence") or []
+    db_claim.ai_analysis = record.get("ai_analysis") or {}
+    db_claim.sources = record.get("sources") or []
+    db_claim.attachments = (
+        record.get("attachments") if isinstance(record.get("attachments"), list) else
+        ([{"filename": k, "url": v} for k, v in record.get("files", {}).items()] 
+         if isinstance(record.get("files"), dict) else
+         record.get("files") if isinstance(record.get("files"), list) else
+         [])
+    )
+    db_claim.ml_scores = record.get("ml_scores") or {}
+    db_claim.routing = record.get("routing") or {}
+    db_claim.history = record.get("history") or []
 
-    Expected minimal keys: claim_number, claimant, claim_type, queue
-    """
-    with _lock:
-        claim_number = record.get("claim_number", "")
-        claim = {
-            "id": record.get("id") or claim_number or str(uuid.uuid4()),
-            "claim_number": claim_number,  # Ensure claim_number is stored
-            "claimant": record.get("claimant") or record.get("name") or "Unknown",
-            "policy_no": record.get("policy_no") or claim_number or "",
-            "loss_type": record.get("loss_type") or record.get("claim_type", "accident"),
-            "claim_type": record.get("claim_type", record.get("loss_type", "accident")),
-            "created_at": record.get("created_at") or _now_iso(),
-            "severity": record.get("severity") or record.get("severity_level") or "Low",
-            "severity_level": record.get("severity_level") or record.get("severity") or "Low",
-            "confidence": float(record.get("confidence", 0.9)),
-            "queue": record.get("queue") or record.get("routing_team") or record.get("final_team") or "Fast Track",
-            "routing_team": record.get("routing_team") or record.get("final_team") or record.get("queue") or "Fast Track",
-            "final_team": record.get("final_team") or record.get("routing_team") or record.get("queue") or "Fast Track",
-            "status": record.get("status") or "Processing",
-            "email": record.get("email"),
-            "description": record.get("description") or "",
-            "rationale": record.get("rationale") or "",
-            "evidence": record.get("evidence") or [],
-            "ai_analysis": record.get("ai_analysis") or {},
-            "sources": record.get("sources") or [],
-            "attachments": (
-                record.get("attachments") if isinstance(record.get("attachments"), list) else
-                ([{"filename": k, "url": v} for k, v in record.get("files", {}).items()] 
-                 if isinstance(record.get("files"), dict) else
-                 record.get("files") if isinstance(record.get("files"), list) else
-                 [])
-            ),
-            "assignee": record.get("assignee") or record.get("final_adjuster"),
-            "adjuster": record.get("adjuster") or record.get("final_adjuster") or record.get("assignee"),
-            "ml_scores": record.get("ml_scores") or {},
-            "routing": record.get("routing"),
-            # Extract individual scores from ml_scores for easier access
-            "fraud_score": record.get("ml_scores", {}).get("fraud_score") if record.get("ml_scores") else None,
-            "complexity_score": record.get("ml_scores", {}).get("complexity_score") if record.get("ml_scores") else None,
-        }
-    claim = _sanitize(claim)
-    _claims.insert(0, claim)
-    _save()
-    return claim
+    session = get_db_session()
+    try:
+        session.merge(db_claim)
+        session.commit()
+        return _sanitize(db_claim.to_dict())
+    except Exception as e:
+        session.rollback()
+        raise e
+    finally:
+        session.close()
 
 
 def list_claims(queue: Optional[str] = None, limit: Optional[int] = None, offset: Optional[int] = None) -> List[Dict[str, Any]]:
     """List claims, optionally filtered by queue"""
-    with _lock:
-        claims = list(_claims)
-        
-        # Filter by queue if provided
+    session = get_db_session()
+    try:
+        query = session.query(DBClaim)
         if queue:
-            claims = [c for c in claims if (
-                c.get("queue", "").lower() == queue.lower() or
-                c.get("routing_team", "").lower() == queue.lower() or
-                c.get("final_team", "").lower() == queue.lower()
-            )]
+            from sqlalchemy import func
+            q_lower = queue.lower()
+            query = query.filter(
+                (func.lower(DBClaim.queue) == q_lower) |
+                (func.lower(DBClaim.routing_team) == q_lower) |
+                (func.lower(DBClaim.final_team) == q_lower)
+            )
         
-        # Apply pagination
+        query = query.order_by(DBClaim.created_at.desc())
+        
         if offset is not None:
-            claims = claims[offset:]
+            query = query.offset(offset)
         if limit is not None:
-            claims = claims[:limit]
-        
-    return _sanitize(claims)
+            query = query.limit(limit)
+            
+        claims = query.all()
+        return _sanitize([c.to_dict() for c in claims])
+    finally:
+        session.close()
 
 
 def get_claim(claim_id: str) -> Optional[Dict[str, Any]]:
     """Get claim by ID or claim_number"""
-    with _lock:
-        for c in _claims:
-            if c.get("id") == claim_id or c.get("claim_number") == claim_id:
-                return _sanitize(dict(c))
-    return None
+    session = get_db_session()
+    try:
+        claim = session.query(DBClaim).filter(
+            (DBClaim.id == claim_id) | (DBClaim.claim_number == claim_id)
+        ).first()
+        return _sanitize(claim.to_dict()) if claim else None
+    finally:
+        session.close()
 
 
 def reassign_claim(claim_id: str, queue: str, assignee: Optional[str] = None, note: Optional[str] = None) -> Optional[Dict[str, Any]]:
     """Reassign claim to a different queue/team"""
-    with _lock:
-        for c in _claims:
-            if c.get("id") == claim_id or c.get("claim_number") == claim_id:
-                c["queue"] = queue
-                c["routing_team"] = queue
-                c["final_team"] = queue
-                if assignee:
-                    c["assignee"] = assignee
-                    c["adjuster"] = assignee
-                c.setdefault("history", []).append({
-                    "type": "reassign",
-                    "queue": queue,
-                    "assignee": assignee,
-                    "note": note,
-                    "at": _now_iso(),
-                })
-                _save()
-                return dict(c)
-    return None
+    session = get_db_session()
+    try:
+        claim = session.query(DBClaim).filter(
+            (DBClaim.id == claim_id) | (DBClaim.claim_number == claim_id)
+        ).first()
+        if claim:
+            claim.queue = queue
+            claim.routing_team = queue
+            claim.final_team = queue
+            if assignee:
+                claim.assignee = assignee
+                claim.adjuster = assignee
+                
+            # Append to history
+            hist = list(claim.history)
+            hist.append({
+                "type": "reassign",
+                "queue": queue,
+                "assignee": assignee,
+                "note": note,
+                "at": _now_iso(),
+            })
+            claim.history = hist
+            
+            session.commit()
+            return _sanitize(claim.to_dict())
+        return None
+    except Exception as e:
+        session.rollback()
+        raise e
+    finally:
+        session.close()
 
 
 def queues_summary() -> List[Dict[str, Any]]:
     """Aggregate claims by queue for the Team Panel."""
-    with _lock:
+    session = get_db_session()
+    try:
+        from sqlalchemy import func
+        results = session.query(DBClaim.queue, func.count(DBClaim.id)).group_by(DBClaim.queue).all()
+        
         counts: Dict[str, int] = {}
-        for c in _claims:
-            q = c.get("queue") or "Fast Track"
-            counts[q] = counts.get(q, 0) + 1
+        for q, count in results:
+            q_name = q or "Fast Track"
+            counts[q_name] = counts.get(q_name, 0) + count
+            
         result = []
         for name, count in sorted(counts.items(), key=lambda i: i[0]):
             result.append({
@@ -184,17 +191,19 @@ def queues_summary() -> List[Dict[str, Any]]:
                 "averageProcessingTime": "--",
             })
         return result
+    finally:
+        session.close()
 
 
 def clear_all_claims() -> int:
-    """Clear all claims from the store and return the count of deleted claims"""
-    global _claims
-    with _lock:
-        count = len(_claims)
-        _claims = []
-        _save()
+    """Clear all claims from the database."""
+    session = get_db_session()
+    try:
+        count = session.query(DBClaim).delete()
+        session.commit()
         return count
-
-
-# Load claims initially
-_load()
+    except Exception as e:
+        session.rollback()
+        raise e
+    finally:
+        session.close()

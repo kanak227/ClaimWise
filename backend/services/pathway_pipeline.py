@@ -38,6 +38,17 @@ class PathwayClaimPipeline:
         self._init_pathway_tables()
         self._build_pipeline()
 
+        # Load initial rules from database
+        try:
+            from .routing_service import load_rules_from_db
+            db_rules = load_rules_from_db()
+            if db_rules:
+                for r in db_rules:
+                    self._rules_store.append(r.copy())
+                logger.info(f"Loaded {len(db_rules)} initial rules into Pathway pipeline")
+        except Exception as e:
+            logger.warning(f"Could not load initial rules into Pathway pipeline: {e}")
+
         logger.info("Pathway claim processing pipeline initialized")
     
     def _init_pathway_tables(self):
@@ -142,6 +153,38 @@ class PathwayClaimPipeline:
         complexity_score = claim.get("complexity_score", 1.0)
         severity_level = claim.get("severity_level", "Low")
         
+        # Sort rules by priority
+        sorted_rules = sorted(rules, key=lambda r: r.get("priority", 999))
+        
+        # Try to match rules first
+        for rule in sorted_rules:
+            if rule.get("enabled", True):
+                if self._match_rule_condition(
+                    rule, fraud_cat, sev_cat, comp_cat,
+                    claim_type, fraud_score, complexity_score, severity_level
+                ):
+                    routing_team = rule.get("routing_team") or rule.get("forward_to")
+                    adjuster = rule.get("adjuster")
+                    if routing_team:
+                        if not adjuster:
+                            if "siu" in routing_team.lower() or "fraud" in routing_team.lower():
+                                adjuster = "SIU Investigator"
+                            elif "complex" in routing_team.lower() or "high" in routing_team.lower():
+                                adjuster = "Senior Adjuster"
+                            elif "standard" in routing_team.lower() or "medium" in routing_team.lower():
+                                adjuster = "Standard Adjuster"
+                            else:
+                                adjuster = "Junior Adjuster"
+                        
+                        return {
+                            "routing_team": routing_team,
+                            "adjuster": adjuster,
+                            "routing_reason": f"Matched rule: {rule.get('name') or rule.get('description')}",
+                            "rule_applied": True,
+                            "rule_id": rule.get("id"),
+                        }
+        
+        # Fallback to default department-based routing
         is_health = claim_type == "medical" or claim_type == "health"
         dept_name = "Health Dept" if is_health else "Accident Dept"
         
@@ -151,7 +194,7 @@ class PathwayClaimPipeline:
             level = "Mid"
         else:
             level = "Low"
-        
+            
         if fraud_score >= 0.6:
             routing_team = "SIU (Fraud)"
             adjuster = "SIU Investigator"
@@ -165,61 +208,118 @@ class PathwayClaimPipeline:
             else:
                 adjuster = "Junior Adjuster"
             routing_reason = f"Complexity score is {complexity_score:.1f} and Severity score is {severity_level} so routed to this team"
-        
+            
         return {
             "routing_team": routing_team,
             "adjuster": adjuster,
             "routing_reason": routing_reason,
-            "rule_applied": True,
+            "rule_applied": False,
         }
     
     def _match_rule_condition(
         self, rule: Dict, fraud_cat: str, sev_cat: str, comp_cat: str,
-        claim_type: str, fraud_score: float
+        claim_type: str, fraud_score: float, complexity_score: float, severity_level: str
     ) -> bool:
-        """Match a rule condition."""
-        condition_type = rule.get("condition_type")
-        
-        if condition_type == "fraud":
-            return fraud_cat == rule.get("condition_value")
-        
-        elif condition_type == "severity":
-            return sev_cat == rule.get("condition_value")
-        
-        elif condition_type == "complexity":
-            return comp_cat == rule.get("condition_value")
-        
-        elif condition_type == "claim_type":
-            return claim_type == rule.get("condition_value")
-        
-        elif condition_type == "fraud_threshold":
-            operator = rule.get("operator", ">=")
-            threshold = rule.get("threshold", 0.0)
+        """Check if a claim matches a rule's condition."""
+        if not rule.get("enabled", True):
+            return False
             
-            if operator == ">=":
-                return fraud_score >= threshold
-            elif operator == ">":
-                return fraud_score > threshold
-            elif operator == "<=":
-                return fraud_score <= threshold
-            elif operator == "<":
-                return fraud_score < threshold
-        
-        elif condition_type == "combined":
+        cond_type = rule.get("condition_type") or rule.get("attribute")
+        if not cond_type:
+            return False
+            
+        op = rule.get("operator", "=")
+        threshold = rule.get("threshold")
+        if threshold is None:
+            threshold = rule.get("amount")
+            
+        def eval_num(val, op, thresh):
+            try:
+                val = float(val)
+                thresh = float(thresh)
+                if op == ">": return val > thresh
+                if op == ">=": return val >= thresh
+                if op == "<": return val < thresh
+                if op == "<=": return val <= thresh
+                if op in ("=", "=="): return val == thresh
+                if op in ("!=", "<>"): return val != thresh
+            except (ValueError, TypeError):
+                pass
+            return False
+
+        if cond_type in ("fraud", "fraud_threshold", "fraud_score"):
+            cond_val = rule.get("condition_value")
+            if cond_val:
+                if op in ("=", "=="):
+                    return fraud_cat == cond_val.lower()
+                if op == "!=":
+                    return fraud_cat != cond_val.lower()
+            if threshold is not None:
+                return eval_num(fraud_score, op, threshold)
+            return False
+            
+        elif cond_type in ("confidence_score", "confidence"):
+            val = 1.0 - fraud_score
+            if threshold is not None:
+                return eval_num(val, op, threshold)
+            return False
+            
+        elif cond_type in ("severity", "severity_score", "severity_level"):
+            cond_val = rule.get("condition_value")
+            if cond_val:
+                if op in ("=", "=="):
+                    return sev_cat == cond_val.lower()
+                if op == "!=":
+                    return sev_cat != cond_val.lower()
+            if threshold is not None:
+                t = float(threshold)
+                if t <= 1.0:
+                    val_scaled = {"low": 0.2, "mid": 0.5, "high": 0.9}.get(sev_cat, 0.2)
+                    return eval_num(val_scaled, op, t)
+                else:
+                    sev_num = {"low": 1.0, "mid": 2.0, "high": 3.0}.get(sev_cat, 1.0)
+                    return eval_num(sev_num, op, t)
+            return False
+            
+        elif cond_type in ("complexity", "complexity_score"):
+            cond_val = rule.get("condition_value")
+            if cond_val:
+                if op in ("=", "=="):
+                    return comp_cat == cond_val.lower()
+                if op == "!=":
+                    return comp_cat != cond_val.lower()
+            if threshold is not None:
+                return eval_num(complexity_score, op, threshold)
+            return False
+            
+        elif cond_type in ("claim_type", "claim_category"):
+            val = claim_type
+            if val == "medical": val = "health"
+            cond_val = rule.get("condition_value") or rule.get("claim_type")
+            if not cond_val and threshold is not None:
+                cond_val = str(rule.get("amount") or "")
+            if cond_val:
+                cond_val_norm = "health" if cond_val.lower() in ("health", "medical") else "accident"
+                if op in ("=", "=="):
+                    return val == cond_val_norm
+                if op == "!=":
+                    return val != cond_val_norm
+            return False
+            
+        elif cond_type == "combined":
             fraud_cond = rule.get("fraud_category")
             sev_cond = rule.get("severity_category")
             comp_cond = rule.get("complexity_category")
             
             match = True
-            if fraud_cond and fraud_cat != fraud_cond:
+            if fraud_cond and fraud_cat != fraud_cond.lower():
                 match = False
-            if sev_cond and sev_cat != sev_cond:
+            if sev_cond and sev_cat != sev_cond.lower():
                 match = False
-            if comp_cond and comp_cat != comp_cond:
+            if comp_cond and comp_cat != comp_cond.lower():
                 match = False
-            
             return match
-        
+            
         return False
     
     def update_rules(self, rules: List[Dict]):

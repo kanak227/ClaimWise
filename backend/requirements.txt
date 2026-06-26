@@ -34,3 +34,9 @@ python-dateutil>=2.8.2
 
 # LLM integration (Gemini)
 google-generativeai>=0.8.0
+
+# Database Persistence (Supabase PostgreSQL)
+SQLAlchemy>=2.0.0
+psycopg2-binary>=2.9.9
+pathway
+

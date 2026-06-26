@@ -5,8 +5,18 @@ import { toast } from "sonner";
 import Badge from "@/components/shared/Badge";
 import PdfViewerModal from "@/components/shared/PdfViewerModal";
 import ReassignModal from "@/components/claims/ReassignModal";
-import { fetchClaim, ClaimDetailResponse } from "@/api/claims";
+import { fetchClaim, ClaimDetailResponse, API_BASE_URL } from "@/api/claims";
 import ClaimChat from "@/components/claims/ClaimChat";
+
+const getAbsoluteFileUrl = (url: string) => {
+  if (!url) return "";
+  if (url.startsWith("http://") || url.startsWith("https://")) {
+    return url;
+  }
+  const cleanUrl = url.startsWith("/") ? url : `/${url}`;
+  return `${API_BASE_URL}${cleanUrl}`;
+};
+
 
 const ClaimDetailPage = () => {
   const navigate = useNavigate();
@@ -460,7 +470,7 @@ const ClaimDetailPage = () => {
                         )}
                       </div>
                       <button
-                        onClick={() => setSelectedPdf({ filename: selectedDoc.filename, url: selectedDoc.url })}
+                        onClick={() => setSelectedPdf({ filename: selectedDoc.filename, url: getAbsoluteFileUrl(selectedDoc.url) })}
                         className="px-3 py-1.5 bg-[#a855f7]/20 hover:bg-[#a855f7]/30 text-[#a855f7] text-xs font-medium rounded-lg transition-all duration-300"
                       >
                         View PDF
@@ -848,7 +858,7 @@ const ClaimDetailPage = () => {
                               </div>
                               {source.url && (
                                 <a
-                                  href={source.url}
+                                  href={getAbsoluteFileUrl(source.url)}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="ml-4 text-[#a855f7] hover:text-[#c084fc] text-sm font-medium"

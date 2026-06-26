@@ -10,26 +10,29 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Add ML fraud detection system to path
+# Add project root to sys.path to allow importing from ml
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-ML_FRAUD_DIR = BASE_DIR / "ml" / "fraud_detection_system"
-
-if str(ML_FRAUD_DIR) not in sys.path:
-    sys.path.insert(0, str(ML_FRAUD_DIR))
+if str(BASE_DIR) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR))
 
 try:
     import pandas as pd
     import joblib
     import numpy as np
-    from preprocess import build_features, extract_text_from_pdf, extract_fields_from_text
-    from fraud_match_model import fraud_score, fraud_label_from_score
-    from triage import triage as triage_agent
+    from ml.pipeline import (
+        build_features,
+        extract_text_from_pdf,
+        extract_fields_from_text,
+        fraud_score,
+        fraud_label_from_score,
+        triage as triage_agent
+    )
     HAS_ML_DEPS = True
 except ImportError as e:
     logger.warning(f"ML dependencies not available: {e}")
     HAS_ML_DEPS = False
 
-MODELS_DIR = ML_FRAUD_DIR / "models"
+MODELS_DIR = BASE_DIR / "ml" / "models"
 
 
 def load_ml_models():
@@ -208,13 +211,7 @@ def score_claim_multi_file(
         
         # Extract entities with text for severity keyword analysis
         # Use the full text for better severity detection
-        import sys
-        from pathlib import Path
-        ML_PREPROCESS_DIR = Path(__file__).parent.parent.parent / "ml" / "fraud_detection_system"
-        if str(ML_PREPROCESS_DIR) not in sys.path:
-            sys.path.insert(0, str(ML_PREPROCESS_DIR))
-        
-        from preprocess import extract_fields_from_text
+        # extract_fields_from_text is imported at the module level
         
         # Re-extract with full text to get severity keywords
         acord_dict_extracted = extract_fields_from_text(acord_full_text, "acord") if acord_full_text else {}

@@ -22,16 +22,21 @@ class RuleCreate(BaseModel):
     description: Optional[str] = None
     enabled: bool = True
     priority: Optional[int] = None
-    condition_type: str  # fraud, severity, complexity, claim_type, fraud_threshold, combined
+    condition_type: Optional[str] = None  # fraud, severity, complexity, claim_type, fraud_threshold, combined
     condition_value: Optional[str] = None  # low, mid, high, accident, health
     claim_type: Optional[str] = None  # accident, health, or None for all
-    routing_team: str
-    adjuster: str
+    routing_team: Optional[str] = None
+    adjuster: Optional[str] = None
     operator: Optional[str] = None  # For fraud_threshold: >=, >, <=, <
     threshold: Optional[float] = None  # For fraud_threshold
     fraud_category: Optional[str] = None  # For combined conditions
     severity_category: Optional[str] = None  # For combined conditions
     complexity_category: Optional[str] = None  # For combined conditions
+    
+    # Frontend attributes
+    attribute: Optional[str] = None
+    amount: Optional[float] = None
+    forward_to: Optional[str] = None
 
 
 class RuleUpdate(BaseModel):
@@ -49,6 +54,11 @@ class RuleUpdate(BaseModel):
     fraud_category: Optional[str] = None
     severity_category: Optional[str] = None
     complexity_category: Optional[str] = None
+    
+    # Frontend attributes
+    attribute: Optional[str] = None
+    amount: Optional[float] = None
+    forward_to: Optional[str] = None
 
 
 class RoutingRequest(BaseModel):
@@ -62,7 +72,7 @@ class RoutingRequest(BaseModel):
 @router.get("/rules")
 async def list_rules():
     """Get all routing rules"""
-    return {"rules": get_all_rules()}
+    return get_all_rules()
 
 
 @router.get("/rules/{rule_id}")

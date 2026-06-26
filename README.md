@@ -1,126 +1,196 @@
 # ClaimWise
 
-A streamlined claims-intelligence platform combining document intake, OCR, machine learning, and reactive routing to accelerate insurance claim handling.
+A production-grade, streamlined claims-intelligence platform combining document intake, OCR, machine learning, and reactive streaming pipelines to accelerate insurance claim handling.
 
-## Overview
+---
 
-ClaimWise ingests multi-document claims, extracts key data using OCR, scores risk and complexity with ML, and routes each claim to the best queue and adjuster. The system offers real-time, reactive routing using Pathway so changes to rules can reassign claims without manual reprocessing.
+## System Architecture
 
-## Core features
+ClaimWise integrates a React client, a FastAPI gateway, scikit-learn machine learning models, and a **Pathway** reactive streaming dataflow to parse, score, and route claims in real time.
 
-- Multi-file upload for medical and accident claims
-- OCR and PDF parsing for structured extraction
-- Fraud, complexity, and severity scoring
-- Dynamic rule-based routing with automatic fallbacks
-- Pathway-backed reactive rerouting when rules change
-- Team panel–friendly claim store and queue summaries
-- Frontend for quick testing and demos
- - Claim-aware chat assistant (Gemini) in the claim detail window
+```mermaid
+flowchart TD
+    subgraph Client ["Client (React UI, http://localhost:8080)"]
+        UI_Rules["Rules Editor (attribute, operator, amount, forward_to)"]
+        UI_Dashboard["Dashboard (Claims List, Queues, AI Chat)"]
+    end
 
-## Project layout
+    subgraph Backend ["FastAPI Backend (http://localhost:8000)"]
+        API["FastAPI Web Server"]
+        OCR["OCR Service (PyMuPDF)"]
+        ClaimStore["Claim Store (Claims / Queue State)"]
+        ML_Service["ML Service (Inference Orchestrator)"]
+        Routing_Service["Routing Service (Rule Normalization & Fallbacks)"]
+        Pathway_Pipeline["Pathway Engine (Reactive Rerouting Pipeline)"]
+    end
 
-- backend: FastAPI service, OCR/ML/routing services, API routers, docs
-- frontend: Vite + React client and shared assets
-- ml: Notebooks, datasets, and experiments
+    subgraph MLCore ["ML Core (ml/)"]
+        ML_Config["ML Config"]
+        ML_Pipeline_Py["ML Pipeline (Regex Parsers & Feature Building)"]
+        ML_Models["Scikit-Learn Models (Random Forests)"]
+    end
 
-Key backend modules
+    %% Ingestion Flow
+    UI_Dashboard -->|1. Upload Claim PDFs| API
+    API -->|2. Extract Text| OCR
+    OCR -->|3. Raw Text| ML_Service
+    ML_Service -->|4. Parse Fields & Features| ML_Pipeline_Py
+    ML_Pipeline_Py -->|5. Predict Scores| ML_Models
+    ML_Models -->|6. Scores (Fraud, Severity, Complexity)| ML_Service
+    ML_Service -->|7. Return ML Scores| API
 
-- routers/upload.py: Intake of claim files and end-to-end processing
-- routers/routing.py: Rule CRUD, apply test routing, reroute operations
-- routers/pathway.py: Pathway ingestion and status endpoints
-- services/ocr_service.py: Document analysis
-- services/ml_service.py: Scoring and categorization
-- services/routing_service.py: Business rules and integration with Pathway
-- services/pathway_pipeline.py: Pathway-backed routing pipeline and helpers
-- services/claim_store.py: Lightweight persistence for claims and queues
+    %% Routing Flow
+    API -->|8. Apply Rules| Routing_Service
+    Routing_Service -->|Option A: Standard Evaluation| ClaimStore
+    API -->|9. Ingest Claim & Rules| Pathway_Pipeline
+    Pathway_Pipeline -->|Option B: Reactive Streaming Reroute| ClaimStore
 
-## Architecture (high level)
-
-1. File Upload: User submits claim documents and metadata.
-2. OCR & Parsing: Text and fields are extracted for each document.
-3. ML Scoring: Fraud, complexity, severity, and related scores are computed.
-4. Routing: Business rules and Pathway pipeline determine team and adjuster.
-5. Storage & UI: Results are stored for queue views and surfaced to the frontend.
-
-## Pathway integration
-
-- The pipeline initializes only when Pathway is present and falls back gracefully otherwise.
-- Rule updates trigger version bumps and can reroute existing claims.
-- Transient Python connectors and schemas are used for simple ingestion and inspection.
-- See backend/PATHWAY_INTEGRATION.md for a deeper explanation and examples.
-
-## APIs (summary)
-
-- Upload: Submit multi-file claims and receive routing results.
-- Routing Rules: Create, update, delete, and list rules.
-- Apply Routing: Test routing decisions with given scores.
-- Reroute: Re-apply routing to individual or all claims when rules change.
-- Pathway: Ingest claims/rules and view pipeline status (optional, when available).
- - Chat: Ask questions about a specific claim.
-	 - POST /api/claims/{id}/chat
-		 - body: { message: string, history?: [{ role: "user"|"assistant", content: string }] }
-		 - resp: { answer: string }
-
-## Setup
-
-- Use a local virtual environment and install backend dependencies from the backend directory.
-- Pathway is optional; when installed on supported platforms, reactive routing becomes available.
-- Tesseract OCR may be required at the system level for full OCR features.
-- Frontend uses a typical modern Vite + React toolchain.
-
-### Gemini chat assistant
-
-To enable the in-app chatbot (Gemini), set the following environment variables before starting the backend. Do NOT commit real secrets — copy `.env.example` to `.env` and fill values locally:
-
-```bash
-export GEMINI_API_KEY=<your_google_gemini_api_key>
-# optional (defaults to gemini-1.5-flash)
-export GEMINI_MODEL=gemini-1.5-flash
-
-Security note:
-- `.env` is in `.gitignore`. If a secret was ever committed, rotate it immediately in your provider.
-- Optional: purge history with `git filter-repo` or BFG; otherwise removing the file and force-pushing rewritten history is required to fully remove it from GitHub.
+    %% Rule Synchronization
+    UI_Rules -->|Post /routing/rules| API
+    API -->|Save Rules| Routing_Service
+    Routing_Service -->|Trigger Sync| Pathway_Pipeline
+    
+    %% Output
+    ClaimStore -->|Sync Claims & Queues| UI_Dashboard
 ```
 
-The Python SDK is included in `backend/requirements.txt` as `google-generativeai`. If you installed dependencies before this feature, reinstall:
+### Component Details
 
-```bash
-pip install -r backend/requirements.txt
+1.  **Ingestion & Parsing**: Custom PDF parsing (`PyMuPDF`) extracts structured metadata from raw text (e.g. loss amounts, incident dates, injuries, vehicle registration) based on document type (ACORD, Police Report, Hospital Bill).
+2.  **ML Feature Engineering**: Combines document fields to compute discrepancy checks (e.g. loss amount difference, date mismatch, litigation risk indicators).
+3.  **ML Scoring**: Runs scikit-learn Random Forest models to evaluate:
+    *   *Fraud Probability*: Classifier predicting the likelihood of fraud.
+    *   *Severity level*: Classifier predicting Low/Medium/High severity.
+    *   *Complexity Score*: Regressor predicting claims processing difficulty (1.0 to 5.0).
+4.  **Business Routing Rules**: Custom routing rules defined by adjusters in the UI (e.g., *Forward claims with complexity >= 3.5 to Senior Team*). Rules are normalized to and from the frontend/backend formats and processed sequentially by priority.
+5.  **Pathway Reactive Rerouting**: When rules are updated, the Pathway streaming engine immediately evaluates all active claims against the new rules snapshot in-memory and automatically reassigns queues without manual reprocessing.
+
+---
+
+## Project Layout
+
+```
+ClaimWise/
+├── backend/                  # FastAPI Application
+│   ├── main.py               # Gateway entrypoint
+│   ├── routers/              # API endpoints (upload, routing, claims, pathway, chat)
+│   ├── schemas/              # Pydantic schemas (RuleCreate, RuleUpdate, etc.)
+│   ├── services/             # Ingestion, OCR, ML, Routing, and Pathway services
+│   ├── tests/                # Pytest unit and integration tests
+│   └── routing_rules.json    # Persistent JSON storage for rules
+├── frontend/                 # Vite + React Client SPA
+│   ├── client/               # React components, pages, hooks, and API client
+│   ├── tailwind.config.ts    # Styling configurations
+│   └── package.json          # Node scripts and dependencies
+├── ml/                       # Machine Learning Codebase
+│   ├── config.py             # Central configuration (paths, weights, parameters)
+│   ├── pipeline.py           # Preprocessing, text parsing, and feature extraction
+│   ├── train.py              # Scikit-Learn training pipelines for Random Forests
+│   └── models/               # Serialized .pkl models and metrics.json
+└── docker-compose.yml        # Unified multi-container orchestration
 ```
 
-Open any claim details screen (Team → select a claim). The chat panel appears on the right.
+---
 
-For step-by-step environment notes, see:
+## Deployment & Setup
 
-- backend/START_HERE.md (if present)
-- backend/QUICK_START.md (if present)
-- backend/TEST_UPLOAD.md (sample flows)
-- backend/ML_ROUTING_INTEGRATION.md
-- backend/PATHWAY_INTEGRATION.md
-- frontend/START_HERE.md and frontend/QUICK_START.md
+Choose one of the following methods to deploy the complete ClaimWise application.
 
-## Data & storage
+### Method A: Unified Docker Compose (Recommended)
+Docker isolates all system packages, installing `tesseract-ocr` and **Pathway** (which requires Linux/macOS) in a containerized Linux environment.
 
-- Uploaded files are stored under backend/uploads.
-- Claims are tracked in backend/data/claims.json via a simple in-process store.
-- Rules are persisted to backend/routing_rules.json.
+1.  **Configure Environment**:
+    Create a `.env` file at the project root based on `.env.example`:
+    ```bash
+    VITE_API_BASE_URL=http://localhost:8000
+    GEMINI_API_KEY=your_google_gemini_api_key
+    ```
+2.  **Launch the Application**:
+    Build and start both the backend and frontend services altogether:
+    ```bash
+    docker-compose up --build -d
+    ```
+3.  **Access the Ports**:
+    *   **Frontend Interface**: [http://localhost:8080](http://localhost:8080)
+    *   **Backend REST API**: [http://localhost:8000](http://localhost:8000)
+    *   **Backend Health Check**: [http://localhost:8000/health](http://localhost:8000/health)
 
-## Security & privacy
+---
 
-- Avoid uploading sensitive data in non-production environments.
-- Add authentication, authorization, and encryption for production use.
+### Method B: Local Development Setup
+To run the components natively on your machine:
 
-## Observability
+#### Prerequisites
+*   Python 3.10+ (and virtualenv)
+*   Node.js 18+ and `pnpm`
+*   Tesseract OCR (installed on host OS for image-to-text extraction)
 
-- Application logs include upload, scoring, and routing events.
-- Pathway status endpoint provides a lightweight snapshot when enabled.
+#### 1. Backend Setup
+1.  Navigate to the `backend/` directory:
+    ```bash
+    cd backend
+    ```
+2.  Create and activate a virtual environment:
+    ```bash
+    python3 -m venv .venv
+    source .venv/bin/activate
+    ```
+3.  Install dependencies:
+    ```bash
+    pip install -r requirements.txt
+    pip install pathway   # (Linux and macOS only)
+    ```
+4.  Start the FastAPI server:
+    ```bash
+    uvicorn main:app --host 127.0.0.1 --port 8000 --reload
+    ```
 
-## Contributing
+#### 2. Frontend Setup
+1.  Navigate to the `frontend/` directory:
+    ```bash
+    cd ../frontend
+    ```
+2.  Install dependencies:
+    ```bash
+    pnpm install
+    ```
+3.  Start the Vite development server:
+    ```bash
+    pnpm run dev
+    ```
+    Open your browser to [http://localhost:8080](http://localhost:8080).
 
-- Open issues for bugs and enhancements.
-- Keep changes scoped and documented.
-- Align with existing code style and structure.
+---
+
+## Verification & Testing
+
+### Python Backend Unit Tests
+We maintain an automated pytest suite validating rule matching boundaries, normalization logic, and Pathway pipeline state:
+```bash
+# From workspace root
+./.venv/bin/python -m pytest backend/tests/test_routing.py
+```
+
+### TypeScript Verification
+Ensure zero frontend compile errors:
+```bash
+# From frontend/ directory
+pnpm typecheck
+```
+
+---
+
+## Chat Assistant (Gemini)
+To enable the conversational claims chat assistant:
+1.  Create a Google Gemini API Key.
+2.  Set it in your host environment or `.env` file:
+    ```bash
+    export GEMINI_API_KEY=<your_api_key>
+    ```
+3.  Open any Claim detail panel in the dashboard to converse with the chat assistant about the parsed claims documents.
+
+---
 
 ## License
 
-This project is licensed under the MIT License © 2025 kanak227. See the LICENSE file for details.
+This project is licensed under the MIT License © 2026 kanak227. See the `LICENSE` file for details.

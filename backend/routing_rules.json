@@ -1,6 +1,6 @@
 [
   {
-    "id": "79611a43-5e1b-4cad-a899-0934585744c5",
+    "id": "1aa2317c-3d1a-47ea-a4ac-548bd3204fbb",
     "name": "High Fraud - All Categories",
     "description": "Route high fraud claims to SIU team",
     "enabled": true,
@@ -15,11 +15,14 @@
     "fraud_category": null,
     "severity_category": null,
     "complexity_category": null,
-    "created_at": "2025-11-02T06:23:55.444743",
-    "updated_at": "2025-11-02T06:23:55.444743"
+    "attribute": null,
+    "amount": null,
+    "forward_to": null,
+    "created_at": "2026-06-26T18:29:54.757436",
+    "updated_at": "2026-06-26T18:29:54.757449"
   },
   {
-    "id": "4b6bc385-0cba-412c-a05a-92aa93ef3ecd",
+    "id": "3db20850-6717-4fe1-b932-b5535dbc13ae",
     "name": "High Fraud - Vehicle",
     "description": "Route high fraud vehicle claims",
     "enabled": true,
@@ -34,11 +37,14 @@
     "fraud_category": null,
     "severity_category": null,
     "complexity_category": null,
-    "created_at": "2025-11-02T06:23:55.446147",
-    "updated_at": "2025-11-02T06:23:55.446147"
+    "attribute": null,
+    "amount": null,
+    "forward_to": null,
+    "created_at": "2026-06-26T18:29:54.757653",
+    "updated_at": "2026-06-26T18:29:54.757655"
   },
   {
-    "id": "443e4974-6b60-4a21-8ef7-8f9f658f41b9",
+    "id": "f4797910-40f0-4917-a25b-c2171b82dc26",
     "name": "High Fraud - Health",
     "description": "Route high fraud health claims",
     "enabled": true,
@@ -53,11 +59,14 @@
     "fraud_category": null,
     "severity_category": null,
     "complexity_category": null,
-    "created_at": "2025-11-02T06:23:55.447159",
-    "updated_at": "2025-11-02T06:23:55.447159"
+    "attribute": null,
+    "amount": null,
+    "forward_to": null,
+    "created_at": "2026-06-26T18:29:54.757785",
+    "updated_at": "2026-06-26T18:29:54.757787"
   },
   {
-    "id": "b647c5ea-206c-473e-a636-b8d6d071dc0c",
+    "id": "be60eeba-180e-449a-bdde-cdde9bf3c7c1",
     "name": "High Severity - Vehicle",
     "description": "Route high severity vehicle claims to Complex Claims",
     "enabled": true,
@@ -72,11 +81,14 @@
     "fraud_category": null,
     "severity_category": null,
     "complexity_category": null,
-    "created_at": "2025-11-02T06:23:55.447159",
-    "updated_at": "2025-11-02T06:23:55.447159"
+    "attribute": null,
+    "amount": null,
+    "forward_to": null,
+    "created_at": "2026-06-26T18:29:54.757987",
+    "updated_at": "2026-06-26T18:29:54.757989"
   },
   {
-    "id": "b1eb5b1b-59d2-49b0-8c7a-f0aa05624c91",
+    "id": "da7d454f-d423-46c9-b850-0e8c86d084d4",
     "name": "High Severity - Health",
     "description": "Route high severity health claims to Complex Claims",
     "enabled": true,
@@ -91,11 +103,14 @@
     "fraud_category": null,
     "severity_category": null,
     "complexity_category": null,
-    "created_at": "2025-11-02T06:23:55.448569",
-    "updated_at": "2025-11-02T06:23:55.448569"
+    "attribute": null,
+    "amount": null,
+    "forward_to": null,
+    "created_at": "2026-06-26T18:29:54.758086",
+    "updated_at": "2026-06-26T18:29:54.758087"
   },
   {
-    "id": "64a4656b-2818-4242-818c-660eaf6b1194",
+    "id": "bbd86647-c0b9-4b2d-9284-a19e5f5c6e90",
     "name": "High Complexity - Vehicle",
     "description": "Route high complexity vehicle claims",
     "enabled": true,
@@ -110,11 +125,14 @@
     "fraud_category": null,
     "severity_category": null,
     "complexity_category": null,
-    "created_at": "2025-11-02T06:23:55.448569",
-    "updated_at": "2025-11-02T06:23:55.448569"
+    "attribute": null,
+    "amount": null,
+    "forward_to": null,
+    "created_at": "2026-06-26T18:29:54.758188",
+    "updated_at": "2026-06-26T18:29:54.758189"
   },
   {
-    "id": "90c01b64-276f-40f1-b47e-4650b3ca58c0",
+    "id": "9392e588-a660-4b23-874f-956c449be9ef",
     "name": "High Complexity - Health",
     "description": "Route high complexity health claims",
     "enabled": true,
@@ -129,11 +147,14 @@
     "fraud_category": null,
     "severity_category": null,
     "complexity_category": null,
-    "created_at": "2025-11-02T06:23:55.449626",
-    "updated_at": "2025-11-02T06:23:55.449626"
+    "attribute": null,
+    "amount": null,
+    "forward_to": null,
+    "created_at": "2026-06-26T18:29:54.758285",
+    "updated_at": "2026-06-26T18:29:54.758289"
   },
   {
-    "id": "3ea339a5-bbdb-4642-a1d4-8ae3c9fcd517",
+    "id": "f102f8f8-9b42-4e64-b476-0a02e75a250f",
     "name": "Mid Fraud - Vehicle",
     "description": "Route mid fraud vehicle claims",
     "enabled": true,
@@ -148,11 +169,14 @@
     "fraud_category": null,
     "severity_category": null,
     "complexity_category": null,
-    "created_at": "2025-11-02T06:23:55.450637",
-    "updated_at": "2025-11-02T06:23:55.450637"
+    "attribute": null,
+    "amount": null,
+    "forward_to": null,
+    "created_at": "2026-06-26T18:29:54.758411",
+    "updated_at": "2026-06-26T18:29:54.758413"
   },
   {
-    "id": "4066e962-dfa0-40eb-89af-364ccbd99616",
+    "id": "e4b8a1ef-b1ee-4383-a59d-dd1f0629a589",
     "name": "Mid Fraud - Health",
     "description": "Route mid fraud health claims",
     "enabled": true,
@@ -167,11 +191,14 @@
     "fraud_category": null,
     "severity_category": null,
     "complexity_category": null,
-    "created_at": "2025-11-02T06:23:55.451636",
-    "updated_at": "2025-11-02T06:23:55.451636"
+    "attribute": null,
+    "amount": null,
+    "forward_to": null,
+    "created_at": "2026-06-26T18:29:54.758839",
+    "updated_at": "2026-06-26T18:29:54.758844"
   },
   {
-    "id": "ccad7ad9-372c-4df8-a0f5-cb5585ac1aff",
+    "id": "a412fad8-6d3c-41b9-bdf5-19efac77837a",
     "name": "Low Risk - Default",
     "description": "Default routing for low risk claims",
     "enabled": true,
@@ -186,7 +213,10 @@
     "fraud_category": null,
     "severity_category": null,
     "complexity_category": null,
-    "created_at": "2025-11-02T06:23:55.452636",
-    "updated_at": "2025-11-02T06:23:55.452636"
+    "attribute": null,
+    "amount": null,
+    "forward_to": null,
+    "created_at": "2026-06-26T18:29:54.759041",
+    "updated_at": "2026-06-26T18:29:54.759045"
   }
 ]
